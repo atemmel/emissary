@@ -1,17 +1,22 @@
 <script setup lang="ts">
-defineProps<{
-  isUser: boolean;
-  contents: string;
+import type {ChatMessage} from "./../models/ChatMessage";
+
+const props = defineProps<{
+  message: ChatMessage;
+  currentUserId: number;
 }>();
+
+const isUser = (id: number) => props.currentUserId === id;
+
 </script>
 
 <template>
   <div class="bubble-row">
-    <div v-if="isUser" class="bubble user">
-      {{contents}}
+    <div v-if="isUser(message.userId)" class="bubble user">
+      {{message.contents}}
     </div>
     <div v-else class="bubble stranger">
-      {{contents}}
+      {{message.contents}}
     </div>
   </div>
 </template>
