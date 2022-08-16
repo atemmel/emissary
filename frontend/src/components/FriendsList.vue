@@ -1,29 +1,32 @@
 <script setup lang="ts">
-
+import axios from "axios";
 import FriendsListItemComponent from "./FriendsListItemComponent.vue";
 import type {FriendsListItem} from "./../models/FriendsListItem";
+import {ref, onMounted} from "vue";
 
-const lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lacinia vulputate ipsum at maximus. Phasellus nibh nunc, condimentum a vestibulum sed, accumsan non sem. Sed.";
+const instance = axios.create({
+  baseURL: "http://localhost:8080",
+});
 
-const friendsList: FriendsListItem[] = [
-  { name: "Name", prevMessage: lorem } as FriendsListItem,
-  { name: "Name", prevMessage: lorem } as FriendsListItem,
-  { name: "Name", prevMessage: lorem } as FriendsListItem,
-  { name: "Name", prevMessage: lorem } as FriendsListItem,
-  { name: "Name", prevMessage: lorem } as FriendsListItem,
-  { name: "Name", prevMessage: lorem } as FriendsListItem,
-  { name: "Name", prevMessage: lorem } as FriendsListItem,
-  { name: "Name", prevMessage: lorem } as FriendsListItem,
-  { name: "Name", prevMessage: lorem } as FriendsListItem,
-  { name: "Name", prevMessage: lorem } as FriendsListItem,
-];
+const currentId = 4;
 
+const friendsListItems = ref<FriendsListItem[]>([]);
+
+const getAllFriendsListItems = () => {
+  instance.get("/friendslistitems/" + currentId).then((response: any) => {
+    friendsListItems.value = response.data;
+  });
+};
+
+onMounted(() => {
+  getAllFriendsListItems();
+});
 </script>
 
 <template>
   <div id="friends-list">
     <FriendsListItemComponent 
-      v-for="(item, idx) in friendsList" 
+      v-for="(item, idx) in friendsListItems" 
       :key="idx" 
       :item="item"
     />

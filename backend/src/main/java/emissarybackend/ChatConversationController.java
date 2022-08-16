@@ -26,9 +26,4 @@ class ChatConversationController {
 		);
 	}
 
-	public class FriendsListItem {
-		private Long friendId;
-		private String friendName;
-		private String prevMessage;
-	}
 }

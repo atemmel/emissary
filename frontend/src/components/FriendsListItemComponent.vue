@@ -9,7 +9,7 @@ defineProps<{
 <template>
   <div class="friend-item">
     <div class="friend-title">
-      {{item.name}}
+      {{item.friendName}}
     </div>
     <div class="friend-prev-message">
       {{item.prevMessage}}

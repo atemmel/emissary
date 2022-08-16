@@ -12,7 +12,7 @@ const isUser = (id: number) => props.currentUserId === id;
 
 <template>
   <div class="bubble-row">
-    <div v-if="isUser(message.userId)" class="bubble user">
+    <div v-if="isUser(message.author)" class="bubble user">
       {{message.contents}}
     </div>
     <div v-else class="bubble stranger">

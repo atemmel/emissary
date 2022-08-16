@@ -1,38 +1,37 @@
 <script setup lang="ts">
+import axios from "axios";
 import type {ChatMessage} from "./../models/ChatMessage";
 import ChatBubble from "./../components/ChatBubble.vue";
-import {ref} from "vue";
+import {ref, onMounted} from "vue";
+
+const instance = axios.create({
+  baseURL: "http://localhost:8080",
+});
 
 const contents = ref<string>("");
 
-const lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lacinia vulputate ipsum at maximus. Phasellus nibh nunc, condimentum a vestibulum sed, accumsan non sem. Sed.";
+const currentUserId = ref<number>(4);
 
-const currentUserId = ref<number>(0);
+const chatMessages = ref<ChatMessage[]>([]);
 
-const messages: ChatMessage[] = [
-  { contents: lorem, userId: 0} as ChatMessage,
-  { contents: lorem, userId: 0} as ChatMessage,
-  { contents: lorem, userId: 1} as ChatMessage,
-  { contents: lorem, userId: 0} as ChatMessage,
-  { contents: lorem, userId: 0} as ChatMessage,
-  { contents: lorem, userId: 0} as ChatMessage,
-  { contents: lorem, userId: 1} as ChatMessage,
-  { contents: lorem, userId: 0} as ChatMessage,
-  { contents: lorem, userId: 0} as ChatMessage,
-  { contents: lorem, userId: 0} as ChatMessage,
-  { contents: lorem, userId: 1} as ChatMessage,
-  { contents: lorem, userId: 0} as ChatMessage,
-  { contents: lorem, userId: 1} as ChatMessage,
-  { contents: lorem, userId: 0} as ChatMessage,
-];
+const currentConversationId = ref<number>(1);
 
+const getAllMessagesInConversation = () => {
+  instance.get("/conversations/" + currentConversationId.value).then((response: any) => {
+    chatMessages.value = response.data.messages;
+  });
+};
+
+onMounted(() => {
+  getAllMessagesInConversation();
+});
 </script>
 
 <template>
   <div id="chat">
     <div id="chat-bubbles">
       <ChatBubble 
-        v-for="(message, idx) in messages" 
+        v-for="(message, idx) in chatMessages" 
         :key="idx" 
         :message="message" 
         :current-user-id="currentUserId" 
