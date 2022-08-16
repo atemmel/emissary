@@ -49,8 +49,8 @@ public class ChatConversation {
 		return participants;
 	}
 
-	public void setParticipants(Set<EmissaryUser> particicpants) {
-		this.participants = particicpants;
+	public void setParticipants(Set<EmissaryUser> participants) {
+		this.participants = participants;
 	}
 
 	public void addParticipant(EmissaryUser participant) {

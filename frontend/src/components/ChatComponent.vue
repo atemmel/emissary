@@ -57,7 +57,7 @@ onMounted(() => {
 #chat-bubbles {
   padding: 10px;
   overflow-y: auto;
-  max-height: 90vh;
+  height: 90vh;
 }
 
 #chat-field-wrapper {

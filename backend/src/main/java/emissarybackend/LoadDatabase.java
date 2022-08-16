@@ -19,7 +19,10 @@ class LoadDatabase {
 			ChatMessageRepository messageRepo) {
 
 		// create everything
-		final var conversation = new ChatConversation();
+		final var conversations = Arrays.asList(
+			new ChatConversation(),
+			new ChatConversation()
+		);
 
 		final var users = Arrays.asList(
 			new EmissaryUser("James"),
@@ -29,22 +32,38 @@ class LoadDatabase {
 		);
 
 		final var messages = Arrays.asList(
-			new ChatMessage("Hello hello", users.get(0)),
-			new ChatMessage("This is a message", users.get(1))
+			Arrays.asList(
+				new ChatMessage("Hello hello", users.get(0)),
+				new ChatMessage("This is a message", users.get(1))
+			),
+			Arrays.asList(
+				new ChatMessage("Second conversation", users.get(0)),
+				new ChatMessage("Very good", users.get(0))
+			)
 		);
 
 		// add users to a conversation
-		conversation.addParticipant(users.get(0));
-		conversation.addParticipant(users.get(1));
+		conversations.get(0).addParticipant(users.get(0));
+		conversations.get(0).addParticipant(users.get(1));
+
+		/*
+		 * This does not work (somehow)
+		conversations.get(1).addParticipant(users.get(0));
+		conversations.get(1).addParticipant(users.get(2));
+		*/
 
 		// add conversation to message
-		conversation.setMessages(messages);
+		assert(conversations.size() == messages.size());
+		for(int i = 0; i < conversations.size(); i++) {
+			conversations.get(i).setMessages(messages.get(i));
+		}
 
 		return args -> {
 			log.info("Preloading begin...");
-			conversationRepo.save(conversation);
+
+			conversations.forEach((conv -> conversationRepo.save(conv)));
 			users.forEach((user -> userRepo.save(user)));
-			messages.forEach(msg -> messageRepo.save(msg));
+			messages.forEach((list -> list.forEach((msg -> messageRepo.save(msg)))));
 			log.info("Preloading complete!");
 		};
 	}
