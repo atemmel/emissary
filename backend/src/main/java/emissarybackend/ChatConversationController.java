@@ -25,4 +25,10 @@ class ChatConversationController {
 			() -> new RuntimeException("Could not find conversation with id " + id)
 		);
 	}
+
+	public class FriendsListItem {
+		private Long friendId;
+		private String friendName;
+		private String prevMessage;
+	}
 }
