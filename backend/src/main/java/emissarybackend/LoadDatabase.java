@@ -13,7 +13,8 @@ class LoadDatabase {
 	private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
 
 	@Bean
-	CommandLineRunner initDatabase(EmissaryUserRepository userRepo, 
+	CommandLineRunner initDatabase(
+			EmissaryUserRepository userRepo, 
 			ChatConversationRepository conversationRepo,
 			ChatMessageRepository messageRepo) {
 
@@ -28,8 +29,8 @@ class LoadDatabase {
 		);
 
 		final var messages = Arrays.asList(
-			new ChatMessage("Hello hello"),
-			new ChatMessage("This is a message")
+			new ChatMessage("Hello hello", users.get(0)),
+			new ChatMessage("This is a message", users.get(1))
 		);
 
 		// add users to a conversation
@@ -40,9 +41,11 @@ class LoadDatabase {
 		conversation.setMessages(messages);
 
 		return args -> {
+			log.info("Preloading begin...");
 			conversationRepo.save(conversation);
-			users.forEach((user -> log.info("Preloading " + userRepo.save(user))));
+			users.forEach((user -> userRepo.save(user)));
 			messages.forEach(msg -> messageRepo.save(msg));
+			log.info("Preloading complete!");
 		};
 	}
 }

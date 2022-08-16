@@ -12,7 +12,10 @@ import javax.persistence.ManyToOne;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Entity
 public class ChatMessage {
@@ -20,12 +23,17 @@ public class ChatMessage {
 	
 	private String contents;
 
-	//@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "CHAT_CONVERSATION_ID")
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JsonIgnore
 	private ChatConversation conversation;
+
+	@ManyToOne
+	@JoinColumn(name = "EMISSARY_USER_ID")
+	@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+	@JsonIdentityReference(alwaysAsId = true)
+	private EmissaryUser author;
 
 	public ChatMessage() {
 		contents = "";
@@ -36,10 +44,12 @@ public class ChatMessage {
 		this.contents = other.contents;
 		this.id = other.id;
 		this.conversation = other.conversation;
+		this.author = other.author;
 	}
 
-	public ChatMessage(String contents) {
+	public ChatMessage(String contents, EmissaryUser author) {
 		this.contents = contents;
+		this.author = author;
 	}
 
 	public String getContents() {
@@ -64,6 +74,14 @@ public class ChatMessage {
 
 	public void setConversation(ChatConversation conversation) {
 		this.conversation = conversation;
+	}
+
+	public EmissaryUser getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(EmissaryUser author) {
+		this.author = author;
 	}
 
 	@Override
