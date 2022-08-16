@@ -8,7 +8,7 @@ const instance = axios.create({
   baseURL: "http://localhost:8080",
 });
 
-const currentId = 4;
+const currentId = 3;
 
 const friendsListItems = ref<FriendsListItem[]>([]);
 

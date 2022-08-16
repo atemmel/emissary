@@ -3,11 +3,15 @@ package emissarybackend;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service("FriendsListItemService")
 public class FriendsListItemService {
+	private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
+
 	@Autowired
 	EmissaryUserRepository userRepository;
 
@@ -21,6 +25,7 @@ public class FriendsListItemService {
 		final EmissaryUser user = userRepository.findById(userId).orElseThrow(
 			() -> new RuntimeException("Could not find user with id " + userId));
 		List<FriendsListItem> items = new ArrayList<>();
+		log.info("Total conversations " + user.getConversations().size());
 		var it = user.getConversations().iterator();
 		while(it.hasNext()) {
 			var conv = it.next();

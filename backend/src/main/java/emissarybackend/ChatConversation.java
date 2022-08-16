@@ -35,6 +35,7 @@ public class ChatConversation {
 	public ChatConversation(ChatConversation other) {
 		this.id = other.id;
 		this.participants = other.participants;
+		this.messages = other.messages;
 	}
 
 	public Long getId() {

@@ -10,7 +10,7 @@ const instance = axios.create({
 
 const contents = ref<string>("");
 
-const currentUserId = ref<number>(4);
+const currentUserId = ref<number>(3);
 
 const chatMessages = ref<ChatMessage[]>([]);
 
