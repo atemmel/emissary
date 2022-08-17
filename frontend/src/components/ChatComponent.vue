@@ -41,7 +41,7 @@ client.debug = (str: string) => {
 const publish = () => {
   const body = JSON.stringify({
     id: null,
-    authorId: props.currentUserId,
+    author: props.currentUserId,
     contents: message.value,
     conversation: props.currentConversationId,
   }, null, 2);

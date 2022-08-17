@@ -31,7 +31,7 @@ public class ChatMessage {
 
 	@ManyToOne
 	@JoinColumn(name = "EMISSARY_USER_ID")
-	@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", resolver = EntityIdResolver.class)
+	@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", resolver = EntityIdResolver.class, scope = EmissaryUser.class)
 	@JsonIdentityReference(alwaysAsId = true)
 	private EmissaryUser author;
 
