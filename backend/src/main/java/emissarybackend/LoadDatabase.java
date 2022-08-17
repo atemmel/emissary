@@ -21,7 +21,7 @@ class LoadDatabase {
 		log.info("Preloading begin...");
 
 		// create everything
-		final var conversations = conversationRepo.saveAll(Arrays.asList(
+		var conversations = conversationRepo.saveAll(Arrays.asList(
 			new ChatConversation(),
 			new ChatConversation()
 		));
@@ -57,7 +57,16 @@ class LoadDatabase {
 			conversations.get(i).setMessages(messages.get(i));
 		}
 
-		conversationRepo.saveAll(conversations);
+		conversations = conversationRepo.saveAll(conversations);
+
+		// add messages to conversations
+		for(int i = 0; i < conversations.size(); i++) {
+			var msg = messages.get(i);
+			for (int j = 0; j < msg.size(); j++) {
+				msg.get(j).setConversation(conversations.get(i));
+			}
+			messageRepo.saveAll(msg);
+		}
 
 		return args -> {
 			log.info("Preloading complete!");

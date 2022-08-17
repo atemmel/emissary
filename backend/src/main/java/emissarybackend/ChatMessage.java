@@ -23,10 +23,11 @@ public class ChatMessage {
 	
 	private String contents;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "CHAT_CONVERSATION_ID")
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	@JsonIgnore
+	//@JsonIgnore
+	@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", resolver = EntityIdResolver.class, scope = ChatConversation.class)
+	@JsonIdentityReference(alwaysAsId = true)
 	private ChatConversation conversation;
 
 	@ManyToOne
