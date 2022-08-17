@@ -70,6 +70,11 @@ public class ChatConversation {
 		this.messages.add(message);
 	}
 
+	public ChatMessage lastMessage() {
+		assert(messages.size() > 0);
+		return messages.get(messages.size() - 1);
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.id);

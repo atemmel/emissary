@@ -13,7 +13,57 @@ const instance = axios.create({
   baseURL: "http://localhost:8080",
 });
 
-const contents = ref<string>("");
+
+/*
+import { io } from "socket.io-client";
+const socket = io("ws://localhost:8080");
+
+socket.on("dummy", (arg: any) => {
+  console.log("Got sent:", arg);
+});
+*/
+
+import {Client} from "@stomp/stompjs";
+
+const client = new Client({
+  brokerURL: "ws://localhost:8080/ws/websocket",
+  reconnectDelay: 5000,
+  heartbeatIncoming: 4000,
+  heartbeatOutgoing: 4000,
+});
+
+/*
+client.debug = (str: string) => {
+  console.log(str);
+};
+*/
+
+const publish = () => {
+  const body = JSON.stringify({
+    id: null,
+    authorId: props.currentUserId,
+    contents: message.value,
+    conversation: props.currentConversationId,
+  }, null, 2);
+  console.log("Sending:", body);
+  client.publish({
+    destination: "/app/dummy",
+    body: body,
+  });
+};
+
+client.onConnect = () => {
+  console.log("Client is connected");
+  client.subscribe("/topic/dummy", (msg: any) => {
+    const recvMsg = JSON.parse(msg.body);
+    console.log("Recieved:", recvMsg);
+    chatMessages.value.push(recvMsg);
+  });
+};
+
+client.activate();
+
+const message = ref<string>("");
 
 const chatMessages = ref<ChatMessage[]>([]);
 
@@ -35,6 +85,15 @@ watch(() => props.currentConversationId,
     getAllMessagesInConversation();
   }
 );
+
+const sendMessage = (e: Event) => {
+  e.preventDefault();
+  if(!client.active) {
+    return;
+  }
+  publish();
+  message.value = "";
+};
 </script>
 
 <template>
@@ -49,7 +108,11 @@ watch(() => props.currentConversationId,
     </div>
     <div id="chat-field-wrapper">
       <div id="chat-field">
-        <textarea v-model="contents" placeholder="Write your message here..."></textarea>
+        <textarea 
+          v-model="message" 
+          placeholder="Write your message here..." 
+          v-on:keypress.enter.exact="sendMessage">
+        </textarea>
       </div>
     </div>
   </div>

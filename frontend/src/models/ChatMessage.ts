@@ -2,6 +2,7 @@ export interface ChatMessage {
   id: number;
   contents: string;
   author: number;
-  //sequnce: number, // chat messageordering
+  conversation: number;
+  //sequence: number, // chat message ordering
   //timestamp
 }
