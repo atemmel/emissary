@@ -13,16 +13,6 @@ const instance = axios.create({
   baseURL: "http://localhost:8080",
 });
 
-
-/*
-import { io } from "socket.io-client";
-const socket = io("ws://localhost:8080");
-
-socket.on("dummy", (arg: any) => {
-  console.log("Got sent:", arg);
-});
-*/
-
 import {Client} from "@stomp/stompjs";
 
 const client = new Client({
@@ -31,12 +21,6 @@ const client = new Client({
   heartbeatIncoming: 4000,
   heartbeatOutgoing: 4000,
 });
-
-/*
-client.debug = (str: string) => {
-  console.log(str);
-};
-*/
 
 const publish = () => {
   const body = JSON.stringify({
@@ -47,14 +31,14 @@ const publish = () => {
   }, null, 2);
   console.log("Sending:", body);
   client.publish({
-    destination: "/chat",
+    destination: "/chat/send",
     body: body,
   });
 };
 
 client.onConnect = () => {
   console.log("Client is connected");
-  client.subscribe("/chat/send", (msg: any) => {
+  client.subscribe("/chat", (msg: any) => {
     const recvMsg = JSON.parse(msg.body);
     console.log("Recieved:", recvMsg);
     chatMessages.value.push(recvMsg);

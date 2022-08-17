@@ -2,6 +2,8 @@ package emissarybackend;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -15,24 +17,31 @@ import org.springframework.web.bind.annotation.RestController;
 class ChatMessageController {
 	private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
 
-	private final ChatMessageRepository repo;
+	private final ChatMessageRepository chatRepo;
 
-	ChatMessageController(ChatMessageRepository repo) {
-		this.repo = repo;
+	private final ChatConversationRepository conversationRepo;
+
+	ChatMessageController(ChatMessageRepository chatRepo, ChatConversationRepository conversationRepo) {
+		this.chatRepo = chatRepo;
+		this.conversationRepo = conversationRepo;
 	}
 
 	@GetMapping("/messages")
 	public List<ChatMessage> all() {
-		return repo.findAll();
+		return chatRepo.findAll();
 	}
 
 	// client publishes to this
-	@MessageMapping("/chat")
+	@MessageMapping("/chat/send")
 	// client subscribes to this
-	@SendTo("/chat/send")
-	//public ChatMessage newMessage() {
+	@SendTo("/chat")
+	@Transactional
 	public ChatMessage newMessage(ChatMessage message) {
-		log.info("HERE");
-		return repo.save(message);
+		message = chatRepo.save(message);
+		var convId = message.getConversation().getId();
+		var conv = conversationRepo.findById(convId).orElseThrow(() -> new RuntimeException("Could not find message recipient"));
+		conv.addMessage(message);
+		log.info("Saved new message");
+		return message;
 	}
 }
