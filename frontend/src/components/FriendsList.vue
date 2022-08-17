@@ -19,7 +19,6 @@ const friendsListItems = ref<FriendsListItem[]>([]);
 const currentItemId = ref<number|null>(null);
 
 const getAllFriendsListItems = () => {
-  console.log("Getting all friends");
   instance.get("/friendslistitems/" + props.currentUserId).then((response: any) => {
     friendsListItems.value = response.data;
 

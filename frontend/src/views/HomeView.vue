@@ -13,7 +13,6 @@ const onConverationChange = (newId: number) => {
 const friendsListChange = ref<boolean>(false);
 
 const onFriendsListChange = () => {
-  console.log("Must update friends");
   friendsListChange.value = !friendsListChange.value;
 };
 

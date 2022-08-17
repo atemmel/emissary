@@ -29,7 +29,8 @@ const publish = () => {
     author: props.currentUserId,
     contents: message.value,
     conversation: props.currentConversationId,
-  }, null, 2);
+  });
+
   client.publish({
     destination: "/chat/send",
     body: body,
@@ -41,6 +42,7 @@ client.onConnect = () => {
   client.subscribe("/chat", (msg: any) => {
     const recvMsg = JSON.parse(msg.body);
     chatMessages.value.push(recvMsg);
+
     emit("friendsListChange");
   });
 };
@@ -70,6 +72,16 @@ watch(() => props.currentConversationId,
   }
 );
 
+watch(() => chatMessages.value.length,
+  async () => {
+    console.log("Scrolling");
+    const anchor = document.getElementById("bubbles-anchor");
+    if(anchor != null) {
+      anchor.scrollIntoView();
+    }
+  }
+);
+
 const sendMessage = (e: Event) => {
   e.preventDefault();
   if(!client.active) {
@@ -89,6 +101,7 @@ const sendMessage = (e: Event) => {
         :message="message" 
         :current-user-id="currentUserId" 
       />
+      <div id="bubbles-anchor"></div>
     </div>
     <div id="chat-field-wrapper">
       <div id="chat-field">
