@@ -47,14 +47,14 @@ const publish = () => {
   }, null, 2);
   console.log("Sending:", body);
   client.publish({
-    destination: "/app/dummy",
+    destination: "/chat",
     body: body,
   });
 };
 
 client.onConnect = () => {
   console.log("Client is connected");
-  client.subscribe("/topic/dummy", (msg: any) => {
+  client.subscribe("/chat/send", (msg: any) => {
     const recvMsg = JSON.parse(msg.body);
     console.log("Recieved:", recvMsg);
     chatMessages.value.push(recvMsg);

@@ -17,9 +17,9 @@ class ChatMessageController {
 	}
 
 	// client publishes to this
-	@MessageMapping("/dummy")
+	@MessageMapping("/chat")
 	// client subscribes to this
-	@SendTo("/topic/dummy")
+	@SendTo("/chat/send")
 	//public ChatMessage newMessage() {
 	public ChatMessage newMessage(ChatMessage message) {
 		log.info("HERE");
