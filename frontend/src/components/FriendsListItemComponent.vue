@@ -1,13 +1,29 @@
 <script setup lang="ts">
 import type {FriendsListItem} from "./../models/FriendsListItem";
 
-defineProps<{
+const props = defineProps<{
   item: FriendsListItem;
+  currentItemId: number;
 }>();
 
+const emit = defineEmits(["conversationChange"]);
+
+const select = () => {
+    emit("conversationChange", props.item.conversationId);
+};
+
+const selected = () => props.item.conversationId == props.currentItemId;
 </script>
 <template>
-  <div class="friend-item">
+  <div v-if="selected()" class="friend-item friend-item-selected" @click="select">
+    <div class="friend-title">
+      {{item.friendName}}
+    </div>
+    <div class="friend-prev-message">
+      {{item.prevMessage}}
+    </div>
+  </div>
+  <div v-else class="friend-item" @click="select">
     <div class="friend-title">
       {{item.friendName}}
     </div>
@@ -38,5 +54,9 @@ defineProps<{
 .friend-item:hover {
   background-color: #555;
   cursor: pointer;
+}
+
+.friend-item-selected {
+  background-color: #444;
 }
 </style>

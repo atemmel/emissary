@@ -4,23 +4,38 @@ import FriendsListItemComponent from "./FriendsListItemComponent.vue";
 import type {FriendsListItem} from "./../models/FriendsListItem";
 import {ref, onMounted} from "vue";
 
+const props = defineProps<{
+  currentUserId: number;
+}>();
+
+const emit = defineEmits(["conversationChange"]);
+
 const instance = axios.create({
   baseURL: "http://localhost:8080",
 });
 
-const currentId = 3;
-
 const friendsListItems = ref<FriendsListItem[]>([]);
+const currentItemId = ref<number>(0);
 
 const getAllFriendsListItems = () => {
-  instance.get("/friendslistitems/" + currentId).then((response: any) => {
+  instance.get("/friendslistitems/" + props.currentUserId).then((response: any) => {
     friendsListItems.value = response.data;
+    if(friendsListItems.value.length > 0) {
+      const newId = friendsListItems.value[0].conversationId;
+      changeConversation(newId);
+    }
   });
 };
 
 onMounted(() => {
   getAllFriendsListItems();
 });
+
+const changeConversation = (id: number) => {
+  currentItemId.value = id;
+  emit("conversationChange", id);
+};
+
 </script>
 
 <template>
@@ -29,6 +44,8 @@ onMounted(() => {
       v-for="(item, idx) in friendsListItems" 
       :key="idx" 
       :item="item"
+      :current-item-id="currentItemId"
+      @conversation-change="changeConversation"
     />
   </div>
 </template>

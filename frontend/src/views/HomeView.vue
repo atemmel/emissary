@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import ChatComponent from "./../components/ChatComponent.vue";
 import FriendsList from "./../components/FriendsList.vue";
+import {ref} from "vue";
+
+const currentConversationId = ref<number|null>(null);
+const currentUserId = 3;
+
+const onConverationChange = (newId: number) => {
+  currentConversationId.value = newId;
+};
 
 </script>
 
@@ -10,9 +18,9 @@ import FriendsList from "./../components/FriendsList.vue";
       <div id="logo">
         <h1>Emissary ✉</h1>
       </div>
-      <FriendsList/>
+      <FriendsList @conversation-change="onConverationChange" :current-user-id="currentUserId"/>
     </div>
-    <ChatComponent/>
+    <ChatComponent :current-conversation-id="currentConversationId" :current-user-id="currentUserId"/>
   </div>
 </template>
 

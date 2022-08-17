@@ -2,7 +2,12 @@
 import axios from "axios";
 import type {ChatMessage} from "./../models/ChatMessage";
 import ChatBubble from "./../components/ChatBubble.vue";
-import {ref, onMounted} from "vue";
+import {ref, onMounted, watch} from "vue";
+
+const props = defineProps<{
+  currentConversationId: number | null;
+  currentUserId: number;
+}>();
 
 const instance = axios.create({
   baseURL: "http://localhost:8080",
@@ -10,14 +15,13 @@ const instance = axios.create({
 
 const contents = ref<string>("");
 
-const currentUserId = ref<number>(3);
-
 const chatMessages = ref<ChatMessage[]>([]);
 
-const currentConversationId = ref<number>(1);
-
 const getAllMessagesInConversation = () => {
-  instance.get("/conversations/" + currentConversationId.value).then((response: any) => {
+  if(props.currentConversationId == null) {
+    return;
+  }
+  instance.get("/conversations/" + props.currentConversationId).then((response: any) => {
     chatMessages.value = response.data.messages;
   });
 };
@@ -25,6 +29,12 @@ const getAllMessagesInConversation = () => {
 onMounted(() => {
   getAllMessagesInConversation();
 });
+
+watch(() => props.currentConversationId,
+  async () => {
+    getAllMessagesInConversation();
+  }
+);
 </script>
 
 <template>
