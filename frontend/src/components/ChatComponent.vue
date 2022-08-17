@@ -3,17 +3,18 @@ import axios from "axios";
 import type {ChatMessage} from "./../models/ChatMessage";
 import ChatBubble from "./../components/ChatBubble.vue";
 import {ref, onMounted, watch} from "vue";
+import {Client} from "@stomp/stompjs";
 
 const props = defineProps<{
   currentConversationId: number | null;
   currentUserId: number;
 }>();
 
+const emit = defineEmits(["friendsListChange"]);
+
 const instance = axios.create({
   baseURL: "http://localhost:8080",
 });
-
-import {Client} from "@stomp/stompjs";
 
 const client = new Client({
   brokerURL: "ws://localhost:8080/ws/websocket",
@@ -29,7 +30,6 @@ const publish = () => {
     contents: message.value,
     conversation: props.currentConversationId,
   }, null, 2);
-  console.log("Sending:", body);
   client.publish({
     destination: "/chat/send",
     body: body,
@@ -40,8 +40,8 @@ client.onConnect = () => {
   console.log("Client is connected");
   client.subscribe("/chat", (msg: any) => {
     const recvMsg = JSON.parse(msg.body);
-    console.log("Recieved:", recvMsg);
     chatMessages.value.push(recvMsg);
+    emit("friendsListChange");
   });
 };
 

@@ -2,10 +2,11 @@
 import axios from "axios";
 import FriendsListItemComponent from "./FriendsListItemComponent.vue";
 import type {FriendsListItem} from "./../models/FriendsListItem";
-import {ref, onMounted} from "vue";
+import {ref, onMounted, watch} from "vue";
 
 const props = defineProps<{
   currentUserId: number;
+  friendsListChange: boolean;
 }>();
 
 const emit = defineEmits(["conversationChange"]);
@@ -15,15 +16,17 @@ const instance = axios.create({
 });
 
 const friendsListItems = ref<FriendsListItem[]>([]);
-const currentItemId = ref<number>(0);
+const currentItemId = ref<number|null>(null);
 
 const getAllFriendsListItems = () => {
+  console.log("Getting all friends");
   instance.get("/friendslistitems/" + props.currentUserId).then((response: any) => {
     friendsListItems.value = response.data;
-    if(friendsListItems.value.length > 0) {
+
+    if(friendsListItems.value.length > 0 && currentItemId.value == null) {
       const newId = friendsListItems.value[0].conversationId;
       changeConversation(newId);
-    }
+    } 
   });
 };
 
@@ -36,6 +39,11 @@ const changeConversation = (id: number) => {
   emit("conversationChange", id);
 };
 
+watch(() => props.friendsListChange, 
+  async() => {
+    getAllFriendsListItems();
+  }
+);
 </script>
 
 <template>

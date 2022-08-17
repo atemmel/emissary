@@ -3,7 +3,7 @@ import type {FriendsListItem} from "./../models/FriendsListItem";
 
 const props = defineProps<{
   item: FriendsListItem;
-  currentItemId: number;
+  currentItemId: number|null;
 }>();
 
 const emit = defineEmits(["conversationChange"]);
@@ -12,7 +12,9 @@ const select = () => {
     emit("conversationChange", props.item.conversationId);
 };
 
-const selected = () => props.item.conversationId == props.currentItemId;
+const selected = () => props.currentItemId 
+  && props.item.conversationId == props.currentItemId;
+
 </script>
 <template>
   <div v-if="selected()" class="friend-item friend-item-selected" @click="select">

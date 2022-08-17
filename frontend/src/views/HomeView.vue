@@ -10,6 +10,13 @@ const onConverationChange = (newId: number) => {
   currentConversationId.value = newId;
 };
 
+const friendsListChange = ref<boolean>(false);
+
+const onFriendsListChange = () => {
+  console.log("Must update friends");
+  friendsListChange.value = !friendsListChange.value;
+};
+
 </script>
 
 <template>
@@ -18,9 +25,9 @@ const onConverationChange = (newId: number) => {
       <div id="logo">
         <h1>Emissary ✉</h1>
       </div>
-      <FriendsList @conversation-change="onConverationChange" :current-user-id="currentUserId"/>
+      <FriendsList @conversation-change="onConverationChange" :current-user-id="currentUserId" :friends-list-change="friendsListChange"/>
     </div>
-    <ChatComponent :current-conversation-id="currentConversationId" :current-user-id="currentUserId"/>
+    <ChatComponent :current-conversation-id="currentConversationId" :current-user-id="currentUserId" @friends-list-change="onFriendsListChange"/>
   </div>
 </template>
 
