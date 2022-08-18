@@ -12,6 +12,7 @@ import javax.persistence.ManyToMany;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Entity
@@ -20,6 +21,9 @@ public class EmissaryUser {
 	
 	private String name;
 
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	private String password;
+
 	@ManyToMany(mappedBy = "participants", cascade = CascadeType.ALL)
 	@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 	@JsonIdentityReference(alwaysAsId = true)
@@ -27,16 +31,19 @@ public class EmissaryUser {
 
 	public EmissaryUser() {
 		name = "";
+		password = "";
 	}
 
 	public EmissaryUser(EmissaryUser other) {
 		this.name = other.name;
+		this.password = other.password;
 		this.id = other.id;
 		this.conversations = other.conversations;
 	}
 
-	public EmissaryUser(String name) {
+	public EmissaryUser(String name, String password) {
 		this.name = name;
+		this.password = password;
 	}
 
 	public String getName() {
@@ -45,6 +52,14 @@ public class EmissaryUser {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public Long getId() {
@@ -80,6 +95,7 @@ public class EmissaryUser {
 
 		var that = (EmissaryUser)o;
 		return Objects.equals(this.name, that.name)
+			&& Objects.equals(this.password, that.password)
 			&& Objects.equals(this.id, that.id);
 	}
 }

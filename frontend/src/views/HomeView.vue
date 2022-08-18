@@ -1,13 +1,63 @@
 <script setup lang="ts">
 import {ref} from "vue";
+import axios from "axios";
+import {useStore} from "./../store";
+import {useRouter} from "vue-router";
+
+const store = useStore();
+const router = useRouter();
 
 const username = ref<string>("");
 const password = ref<string>("");
 
 const isLogin = ref<boolean>(true);
 
+const instance = axios.create({
+  baseURL: "http://localhost:8080",
+});
+
+const formError = ref<string>("");
+
 const toggleForm = () => {
   isLogin.value = !isLogin.value;
+};
+
+const login = () => {
+  auth("/auth/login", {
+    username: username.value,
+    password: password.value,
+  });
+};
+
+const register = () => {
+  auth("/auth/register", {
+    name: username.value,
+    password: password.value,
+  });
+};
+
+const auth = (url: string, data: any) => {
+  instance.post(url, data).then((response: any) => {
+    if(response.data.error){
+      formError.value = response.data.error;
+      return;
+    }
+    const token = response.data["jwt-token"];
+    handleToken(token);
+  }).catch((error: string) => {
+      formError.value = error;
+  });
+};
+
+const handleToken = (token: string) => {
+  console.log("handling token: ", token);
+  store.commit("setToken", token);
+  console.log("Token stored");
+  router.push("/chat").then(() => {
+    console.log("Something happened");
+  }).catch(() => {
+    console.log("Something bad happened");
+  });
 };
 
 </script>
@@ -30,12 +80,15 @@ const toggleForm = () => {
         <div class="form-label">
           <label for="password">Password</label>
         </div>
-        <input v-model="password" id="password">
+        <input v-model="password" id="password" type="password">
       </div>
       <div class="vpad">
-        <div class="form-element">
+        <div class="form-element" @click="login">
           <div class="button">Login</div>
         </div>
+      </div>
+      <div>
+        {{formError}}
       </div>
       <div id="form-switch">
         Don't have an account? <span @click="toggleForm" class="link">Register here.</span>
@@ -55,12 +108,15 @@ const toggleForm = () => {
         <div class="form-label">
           <label for="password">Password</label>
         </div>
-        <input v-model="password" id="password">
+        <input v-model="password" id="password" type="password">
       </div>
       <div class="vpad">
-        <div class="form-element">
+        <div class="form-element" @click="register">
           <div class="button">Register</div>
         </div>
+      </div>
+      <div>
+        {{formError}}
       </div>
       <div id="form-switch">
         Already have an account? <span @click="toggleForm" class="link">Login here.</span>
