@@ -18,6 +18,8 @@ const instance = axios.create({
 
 const formError = ref<string>("");
 
+const isAuthorizing = ref<boolean>(false);
+
 const toggleForm = () => {
   isLogin.value = !isLogin.value;
 };
@@ -37,14 +39,17 @@ const register = () => {
 };
 
 const auth = (url: string, data: any) => {
+  isAuthorizing.value = true;
   instance.post(url, data).then((response: any) => {
     if(response.data.error){
       formError.value = response.data.error;
+      isAuthorizing.value = false;
       return;
     }
     handleRepsonse(response.data);
   }).catch((error: string) => {
       formError.value = error;
+      isAuthorizing.value = false;
   });
 };
 
@@ -54,6 +59,7 @@ const handleRepsonse = (data: any) => {
   console.log("Token stored");
   console.log("Given id:", data.userId);
   router.push("/chat");
+  isAuthorizing.value = false;
 };
 
 </script>
@@ -61,7 +67,7 @@ const handleRepsonse = (data: any) => {
   <header>
     <h1>Emissary ✉</h1>
   </header>
-  <div id="login-wrapper">
+  <div v-if="!isAuthorizing" id="login-wrapper">
     <div v-if="isLogin" class="form-box">
       <div class="title">
         <h1>Login</h1>
