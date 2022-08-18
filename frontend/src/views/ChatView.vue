@@ -66,11 +66,13 @@ const getListOfChattableUsers = () => {
         <div class="new-conversation-dialog-title">
           New conversation
         </div>
-        <AddUserToConversationItem 
-          v-for="(user, idx) in chattableUsers" 
-          :username="user.name" 
-          :key="idx"
-        />
+        <div class="conversation-list">
+          <AddUserToConversationItem 
+            v-for="(user, idx) in chattableUsers" 
+            :username="user.name" 
+            :key="idx"
+          />
+        </div>
       </div>
     </div>
     <div id="right-col-wrapper">
@@ -140,12 +142,15 @@ const getListOfChattableUsers = () => {
   color: var(--color-text);
   text-align: center;
   width: 400px;
-  overflow-y: auto;
-  max-height: 80vh;
 }
 
 .new-conversation-dialog-title {
   padding: 26px 18px;
   font-weight: bold;
+}
+
+.conversation-list {
+  overflow-y: auto;
+  max-height: 80vh;
 }
 </style>
