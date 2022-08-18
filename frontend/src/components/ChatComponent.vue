@@ -2,7 +2,7 @@
 import axios from "axios";
 import type {ChatMessage} from "./../models/ChatMessage";
 import ChatBubble from "./../components/ChatBubble.vue";
-import {ref, onMounted, watch} from "vue";
+import {ref, onMounted, watch, nextTick} from "vue";
 import {Client} from "@stomp/stompjs";
 
 const props = defineProps<{
@@ -74,11 +74,12 @@ watch(() => props.currentConversationId,
 
 watch(() => chatMessages.value.length,
   async () => {
-    console.log("Scrolling");
-    const anchor = document.getElementById("bubbles-anchor");
-    if(anchor != null) {
-      anchor.scrollIntoView();
-    }
+    nextTick(() => {
+      const anchor = document.getElementById("bubbles-anchor");
+      if(anchor != null) {
+        anchor.scrollIntoView();
+      }
+    });
   }
 );
 
