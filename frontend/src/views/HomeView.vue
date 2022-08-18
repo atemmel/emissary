@@ -1,53 +1,151 @@
 <script setup lang="ts">
-import ChatComponent from "./../components/ChatComponent.vue";
-import FriendsList from "./../components/FriendsList.vue";
 import {ref} from "vue";
 
-const currentConversationId = ref<number|null>(null);
-const currentUserId = 3;
+const username = ref<string>("");
+const password = ref<string>("");
 
-const onConverationChange = (newId: number) => {
-  currentConversationId.value = newId;
-};
+const isLogin = ref<boolean>(true);
 
-const friendsListChange = ref<boolean>(false);
-
-const onFriendsListChange = () => {
-  friendsListChange.value = !friendsListChange.value;
+const toggleForm = () => {
+  isLogin.value = !isLogin.value;
 };
 
 </script>
-
 <template>
-  <div id="content">
-    <div id="right-col-wrapper">
-      <div id="logo">
-        <h1>Emissary ✉</h1>
+  <header>
+    <h1>Emissary ✉</h1>
+  </header>
+  <div id="login-wrapper">
+    <div v-if="isLogin" class="form-box">
+      <div class="title">
+        <h1>Login</h1>
       </div>
-      <FriendsList @conversation-change="onConverationChange" :current-user-id="currentUserId" :friends-list-change="friendsListChange"/>
+      <div class="form-element">
+        <div class="form-label">
+          <label for="username">Username</label>
+        </div>
+        <input v-model="username" id="username">
+      </div>
+      <div class="form-element">
+        <div class="form-label">
+          <label for="password">Password</label>
+        </div>
+        <input v-model="password" id="password">
+      </div>
+      <div class="vpad">
+        <div class="form-element">
+          <div class="button">Login</div>
+        </div>
+      </div>
+      <div id="form-switch">
+        Don't have an account? <span @click="toggleForm" class="link">Register here.</span>
+      </div>
     </div>
-    <ChatComponent :current-conversation-id="currentConversationId" :current-user-id="currentUserId" @friends-list-change="onFriendsListChange"/>
+    <div v-else class="form-box">
+      <div class="title">
+        <h1>Register</h1>
+      </div>
+      <div class="form-element">
+        <div class="form-label">
+          <label for="username">Username</label>
+        </div>
+        <input v-model="username" id="username">
+      </div>
+      <div class="form-element">
+        <div class="form-label">
+          <label for="password">Password</label>
+        </div>
+        <input v-model="password" id="password">
+      </div>
+      <div class="vpad">
+        <div class="form-element">
+          <div class="button">Register</div>
+        </div>
+      </div>
+      <div id="form-switch">
+        Already have an account? <span @click="toggleForm" class="link">Login here.</span>
+      </div>
+    </div>
   </div>
 </template>
+<style scoped>
 
-<style scoped> 
-
-#content {
-  overflow-y: none;
+#login-wrapper {
+  width: 1024px;
+  margin: 0 auto;
+  margin-top: 40px;
 }
 
-#right-col-wrapper {
-  vertical-align: top;
-  display: inline-block;
+.form-box {
+  border: 1px solid #555;
+  padding: 8px 12px;
+  border-radius: 16px;
+  width: 400px;
+  float: right;
 }
 
-#logo {
-  border-right: 1px solid #555;
-  padding: 1em 0em;
-  height: 10vh;
+.form-element {
+  padding: 8px;
+  width: 100%;
+}
+
+.form-label {
+  padding: 4px 12px;
+}
+
+input {
+  width: 100%;
+  border: 1px solid #555;
+  padding: 8px 12px;
+  border-radius: 16px;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-size: 1em;
+}
+
+input:focus {
+  background-color: #555;
+  outline: none;
+}
+
+.title {
   text-align: center;
-  vertical-align:middle;
-  line-height: 5vh;
+}
+
+.button {
+  width: 100%;
+  font-size: 1.2em;
+  border: 1px solid #555;
+  padding: 6px 18px;
+  border-radius: 16px;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  text-align: center;
+  font-weight: bold;
+}
+
+.button:hover {
+  background-color: #555;
+  cursor: pointer;
+}
+
+.vpad {
+  padding: 22px 0 0 0;
+}
+
+.link {
+  font-weight: bold;
+}
+
+.link:hover {
+  color: white;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+header {
+  border-bottom: 1px solid #555;
+  padding: 1em;
 }
 
 </style>
