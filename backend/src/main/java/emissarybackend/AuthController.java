@@ -1,6 +1,7 @@
 package emissarybackend;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -42,7 +43,8 @@ public class AuthController {
 		user = userRepository.save(user);
 		String token = jwtUtil.generateToken(user.getName());
 		log.info("Registering " + user.getName());
-		return Collections.singletonMap("jwt-token", token);
+		//return Collections.singletonMap("jwt-token", token);
+		return createLoginInfoMap(token, user);
 	}
 
 	@PostMapping("/login")
@@ -51,12 +53,21 @@ public class AuthController {
 			var authInputToken = new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword());
 			authManager.authenticate(authInputToken);
 			String token = jwtUtil.generateToken(body.getUsername());
-			return Collections.singletonMap("jwt-token", token);
+			//return Collections.singletonMap("jwt-token", token);
+			var user = userRepository.findByName(body.getUsername()).orElseThrow(() -> new RuntimeException("Could not find user by name"));
+			return createLoginInfoMap(token, user);
 		} catch (AuthenticationException e) {
 			log.info("Bad thing");
 			e.printStackTrace();
 			log.info("Bad thing");
 			throw new RuntimeException("Invalid login credentials");
 		}
+	}
+
+	public Map<String, Object> createLoginInfoMap(String token, EmissaryUser user) {
+		var map = new HashMap<String, Object>();
+		map.put("jwt-token", token);
+		map.put("userId", user.getId());
+		return map;
 	}
 }

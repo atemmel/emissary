@@ -42,22 +42,18 @@ const auth = (url: string, data: any) => {
       formError.value = response.data.error;
       return;
     }
-    const token = response.data["jwt-token"];
-    handleToken(token);
+    handleRepsonse(response.data);
   }).catch((error: string) => {
       formError.value = error;
   });
 };
 
-const handleToken = (token: string) => {
-  console.log("handling token: ", token);
-  store.commit("setToken", token);
+const handleRepsonse = (data: any) => {
+  store.commit("setToken", data["jwt-token"]);
+  store.commit("setId", data.userId);
   console.log("Token stored");
-  router.push("/chat").then(() => {
-    console.log("Something happened");
-  }).catch(() => {
-    console.log("Something bad happened");
-  });
+  console.log("Given id:", data.userId);
+  router.push("/chat");
 };
 
 </script>

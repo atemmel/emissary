@@ -2,9 +2,16 @@
 import ChatComponent from "./../components/ChatComponent.vue";
 import FriendsList from "./../components/FriendsList.vue";
 import {ref} from "vue";
+import {useStore} from "./../store";
+import router from "./../router";
+
+const store = useStore();
 
 const currentConversationId = ref<number|null>(null);
-const currentUserId = 3;
+const currentUserId = store.state.userId;
+if(!currentUserId) {
+  router.push("/");
+}
 
 const onConverationChange = (newId: number) => {
   currentConversationId.value = newId;
@@ -16,17 +23,19 @@ const onFriendsListChange = () => {
   friendsListChange.value = !friendsListChange.value;
 };
 
+const hasConversation = () => currentUserId != null;
+
 </script>
 
 <template>
-  <div id="content">
+  <div v-if="currentUserId" id="content">
     <div id="right-col-wrapper">
       <div id="logo">
         <h1>Emissary ✉</h1>
       </div>
       <FriendsList @conversation-change="onConverationChange" :current-user-id="currentUserId" :friends-list-change="friendsListChange"/>
     </div>
-    <ChatComponent :current-conversation-id="currentConversationId" :current-user-id="currentUserId" @friends-list-change="onFriendsListChange"/>
+    <ChatComponent v-if="hasConversation" :current-conversation-id="currentConversationId" :current-user-id="currentUserId" @friends-list-change="onFriendsListChange"/>
   </div>
 </template>
 
