@@ -26,20 +26,6 @@ const client = new Client({
   heartbeatOutgoing: 4000,
 });
 
-const publish = () => {
-  const body = JSON.stringify({
-    id: null,
-    author: props.currentUserId,
-    contents: message.value,
-    conversation: props.currentConversationId,
-  });
-
-  client.publish({
-    destination: "/chat/send",
-    body: body,
-  });
-};
-
 client.onConnect = () => {
   console.log("Client is connected");
   client.subscribe("/chat", (msg: any) => {
@@ -91,10 +77,22 @@ watch(() => chatMessages.value.length,
 
 const sendMessage = (e: Event) => {
   e.preventDefault();
-  if(!client.active) {
+  if(!client.active || !props.currentConversationId) {
     return;
   }
-  publish();
+
+  const msg: ChatMessage = {
+    id: null,
+    author: props.currentUserId,
+    contents: message.value,
+    conversation: props.currentConversationId,
+    timestamp: new Date(),
+  };
+
+  client.publish({
+    destination: "/chat/send",
+    body: JSON.stringify(msg),
+  });
   message.value = "";
 };
 </script>

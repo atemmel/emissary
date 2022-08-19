@@ -1,8 +1,7 @@
 export interface ChatMessage {
-  id: number;
+  id: number|null;
   contents: string;
   author: number;
   conversation: number;
-  //sequence: number, // chat message ordering
-  //timestamp
+  timestamp: Date;
 }

@@ -15,22 +15,21 @@ const select = () => {
 const selected = () => props.currentItemId 
   && props.item.conversationId == props.currentItemId;
 
+const hasAuthor = () => props.item.prevAuthor.length > 0;
+
 </script>
 <template>
-  <div v-if="selected()" class="friend-item friend-item-selected" @click="select">
+  <div class="friend-item" @click="select" :class="{'friend-item-selected': selected()}">
     <div class="friend-title">
       {{item.friendName}}
     </div>
-    <div class="friend-prev-message">
-      {{item.prevMessage}}
-    </div>
-  </div>
-  <div v-else class="friend-item" @click="select">
-    <div class="friend-title">
-      {{item.friendName}}
-    </div>
-    <div class="friend-prev-message">
-      {{item.prevMessage}}
+    <div class="friend-prev">
+      <span class="prev-author" v-show="hasAuthor()">
+        {{item.prevAuthor}}: 
+      </span>
+      <span :class="{'prev-message': !hasAuthor()}">
+        {{item.prevMessage}}
+      </span>
     </div>
   </div>
 </template>
@@ -46,11 +45,15 @@ const selected = () => props.currentItemId
   padding: 1em 2em;
 }
 
-.friend-prev-message {
+.friend-prev {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
   padding: 1em 2em;
+}
+
+.prev-message {
+  font-style: italic;
 }
 
 .friend-item:hover {
@@ -60,5 +63,9 @@ const selected = () => props.currentItemId
 
 .friend-item-selected {
   background-color: #444;
+}
+
+.prev-author {
+  color: #EEE;
 }
 </style>

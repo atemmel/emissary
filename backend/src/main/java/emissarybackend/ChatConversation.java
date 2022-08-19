@@ -1,6 +1,7 @@
 package emissarybackend;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -16,7 +17,6 @@ import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Entity
@@ -33,14 +33,17 @@ public class ChatConversation {
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<ChatMessage> messages = new ArrayList<ChatMessage>();
 
-	public ChatConversation() {
+	private Date creationTimestamp = new Date();
 
+	public ChatConversation() {
+		creationTimestamp = new Date();
 	}
 
 	public ChatConversation(ChatConversation other) {
 		this.id = other.id;
 		this.participants = other.participants;
 		this.messages = other.messages;
+		this.creationTimestamp = other.creationTimestamp;
 	}
 
 	public Long getId() {
@@ -69,6 +72,14 @@ public class ChatConversation {
 
 	public void setMessages(List<ChatMessage> messages) {
 		this.messages = messages;
+	}
+
+	public Date getCreationTimestamp() {
+		return creationTimestamp;
+	}
+
+	public void setCreationTimestamp(Date creationTimestamp) {
+		this.creationTimestamp = creationTimestamp;
 	}
 
 	public void addMessage(ChatMessage message) {

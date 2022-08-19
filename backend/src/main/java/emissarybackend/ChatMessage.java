@@ -1,20 +1,16 @@
 package emissarybackend;
 
+import java.util.Date;
 import java.util.Objects;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Entity
@@ -36,9 +32,12 @@ public class ChatMessage {
 	@JsonIdentityReference(alwaysAsId = true)
 	private EmissaryUser author;
 
+	private Date timestamp = new Date();
+
 	public ChatMessage() {
 		contents = "";
 		id = 0l;
+		timestamp = new Date();
 	}
 
 	public ChatMessage(ChatMessage other) {
@@ -59,6 +58,14 @@ public class ChatMessage {
 
 	public void setContents(String contents) {
 		this.contents = contents;
+	}
+
+	public Date getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
 	}
 
 	public Long getId() {
