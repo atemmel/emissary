@@ -2,6 +2,7 @@
 import axios from "axios";
 import type {ChatMessage} from "./../models/ChatMessage";
 import ChatBubble from "./../components/ChatBubble.vue";
+import PlusIcon from "./../components/PlusIcon.vue";
 import {ref, onMounted, watch, nextTick} from "vue";
 import {Client} from "@stomp/stompjs";
 import {useStore} from "./../store";
@@ -99,6 +100,14 @@ const sendMessage = (e: Event) => {
 
 <template>
   <div id="chat">
+    <div id="chat-options" v-show="currentConversationId != null">
+      <div class="chat-option-wrapper">
+          <PlusIcon></PlusIcon>
+      </div>
+      <div class="chat-option-wrapper">
+          <PlusIcon></PlusIcon>
+      </div>
+    </div>
     <div id="chat-bubbles">
       <ChatBubble 
         v-for="(message, idx) in chatMessages" 
@@ -110,6 +119,9 @@ const sendMessage = (e: Event) => {
     </div>
     <div id="chat-field-wrapper">
       <div id="chat-field">
+        <div id="upload-button">
+          <PlusIcon></PlusIcon>
+        </div>
         <textarea 
           v-model="message" 
           placeholder="Write your message here..." 
@@ -132,7 +144,7 @@ const sendMessage = (e: Event) => {
 #chat-bubbles {
   padding: 10px;
   overflow-y: auto;
-  height: 90vh;
+  height: 85vh;
 }
 
 #chat-field-wrapper {
@@ -150,15 +162,44 @@ const sendMessage = (e: Event) => {
   resize: none;
   border: none;
   padding: 8px 0px 0px 12px;
-  margin: 0;
+  margin-right: 8px;
   width: 34.5vw;
   overflow: auto;
-  background : #555;
+  background : #444;
   border-radius: 16px;
   color: var(--color-text);
   display: block;
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
     Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 1.1em;
+}
+
+#chat-options {
+  width: 100%;
+  border-bottom: 1px solid #555;
+  text-align: right;
+}
+
+.chat-option-wrapper {
+  display: inline-block;
+  border-left: 1px solid #555;
+  padding: 14px 20px;
+}
+
+.chat-option-wrapper:hover {
+  background : #555;
+  cursor: pointer;
+}
+
+#upload-button {
+  float: right;
+  background : #444;
+  padding: 1em;
+  border-radius: 16px;
+}
+
+#upload-button:hover {
+  background : #555;
+  cursor: pointer;
 }
 </style>
