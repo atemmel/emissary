@@ -19,6 +19,8 @@ public class ChatMessage {
 	
 	private String contents;
 
+	private byte[] attachment;
+
 	@ManyToOne
 	@JoinColumn(name = "CHAT_CONVERSATION_ID")
 	//@JsonIgnore
@@ -45,6 +47,7 @@ public class ChatMessage {
 		this.id = other.id;
 		this.conversation = other.conversation;
 		this.author = other.author;
+		this.attachment = other.attachment;
 	}
 
 	public ChatMessage(String contents, EmissaryUser author) {
@@ -66,6 +69,14 @@ public class ChatMessage {
 
 	public void setTimestamp(Date timestamp) {
 		this.timestamp = timestamp;
+	}
+
+	public byte[] getAttachment() {
+		return attachment;
+	}
+
+	public void setAttachment(byte[] attachment) {
+		this.attachment = attachment;
 	}
 
 	public Long getId() {

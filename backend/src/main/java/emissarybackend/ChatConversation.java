@@ -25,8 +25,11 @@ public class ChatConversation {
 
 	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinColumn(name="EMISSARY_USER_ID")
-	//@JsonIgnore
-	@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", resolver = EntityIdResolver.class, scope = EmissaryUser.class)
+	@JsonIdentityInfo(
+		generator = ObjectIdGenerators.PropertyGenerator.class, 
+		property = "id", 
+		resolver = EntityIdResolver.class, 
+		scope = EmissaryUser.class)
 	@JsonIdentityReference(alwaysAsId = true)
 	private Set<EmissaryUser> participants = new HashSet<EmissaryUser>();
 

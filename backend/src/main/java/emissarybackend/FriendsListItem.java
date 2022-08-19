@@ -50,7 +50,7 @@ public class FriendsListItem {
 		return prevAuthor;
 	}
 
-	public void setPrevMessage(String prevAuthor) {
+	public void setPrevAuthor(String prevAuthor) {
 		this.prevAuthor = prevAuthor;
 	}
 

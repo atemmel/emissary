@@ -51,6 +51,7 @@ const getAllMessagesInConversation = () => {
   instance.get("/conversations/" + props.currentConversationId,
     {headers: {"Authorization": `Bearer ${token}`},},
   ).then((response: any) => {
+    console.log(response.data.messages);
     chatMessages.value = response.data.messages;
   });
 };
@@ -102,10 +103,10 @@ const sendMessage = (e: Event) => {
   <div id="chat">
     <div id="chat-options" v-show="currentConversationId != null">
       <div class="chat-option-wrapper">
-          <PlusIcon></PlusIcon>
+          Invite to chat
       </div>
       <div class="chat-option-wrapper">
-          <PlusIcon></PlusIcon>
+          <span class="evil">Leave Chat</span>
       </div>
     </div>
     <div id="chat-bubbles">
@@ -201,5 +202,9 @@ const sendMessage = (e: Event) => {
 #upload-button:hover {
   background : #555;
   cursor: pointer;
+}
+
+.evil {
+  color: #F22;
 }
 </style>

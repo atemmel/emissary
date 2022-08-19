@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import axios from "axios";
 import AddUserToConversationItem from "./../components/AddUserToConversationItem.vue";
+import OverlayDialog from "./../components/OverlayDialog.vue";
 import type {EmissaryUser} from "./../models/EmissaryUser";
 import {ref, watch, defineEmits} from "vue";
 import {useStore} from "./../store";
@@ -84,63 +85,33 @@ const maySubmit = () => addedUsers.value.length > 0;
 </script>
 
 <template>
-  <div v-show="visible" id="overlay-dialog-wrapper">
-    <div v-show="visible" id="overlay" @click="sendEmit"></div>
-    <div id="new-conversation-dialog">
-      <div class="new-conversation-dialog-title">
-        New conversation
-      </div>
-      <div class="mini-added-list">
-        <div v-for="(user, idx) in addedUsers" :key="idx" class="mini-added-list-item">
-          {{user.name}}
-        </div>
-      </div>
-      <div class="conversation-list">
-        <AddUserToConversationItem 
-          v-for="(user, idx) in chattableUsers" 
-          :user="user" 
-          :key="idx"
-          @added="addUser"
-          @removed="removeUser"
-        />
-      </div>
-      <div v-show="maySubmit()" class="submit-conversation-button" @click="submit">Start conversation</div>
+  <OverlayDialog :visible="visible" @close="sendEmit">
+    <div class="new-conversation-dialog-title">
+      New conversation
     </div>
-  </div>
+    <div class="mini-added-list">
+      <div v-for="(user, idx) in addedUsers" :key="idx" class="mini-added-list-item">
+        {{user.name}}
+      </div>
+    </div>
+    <div class="conversation-list">
+      <AddUserToConversationItem 
+        v-for="(user, idx) in chattableUsers" 
+        :user="user" 
+        :key="idx"
+        @added="addUser"
+        @removed="removeUser"
+      />
+    </div>
+    <div v-show="maySubmit()" 
+      class="submit-conversation-button" 
+      @click="submit">
+        Start conversation
+    </div>
+  </OverlayDialog>
 </template>
 
 <style scoped> 
-
-#overlay-dialog-wrapper {
-  position: fixed;
-  z-index: 10;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-}
-
-#overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-#new-conversation-dialog {
-  z-index: 100;
-  vertical-align: middle;
-  display: inline-block;
-  border: 1px solid #555;
-  border-radius: 16px;
-  background-color: var(--color-background);
-  color: var(--color-text);
-  text-align: center;
-  width: 400px;
-}
 
 .new-conversation-dialog-title {
   padding: 26px 18px;
