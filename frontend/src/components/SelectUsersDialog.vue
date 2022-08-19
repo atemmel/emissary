@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import AddUserToConversationItem from "./AddUserToConversationItem.vue";
+import SelectUsersDialogItem from "./SelectUsersDialogItem.vue";
 import type {EmissaryUser} from "./../models/EmissaryUser";
 import OverlayDialog from "./OverlayDialog.vue";
 import {ref, watch, defineEmits} from "vue";
@@ -81,7 +81,7 @@ const sendSubmit = () => {
       </div>
     </div>
     <div class="conversation-list">
-      <AddUserToConversationItem 
+      <SelectUsersDialogItem 
         v-for="(user, idx) in allUsers" 
         :user="user" 
         :key="idx"

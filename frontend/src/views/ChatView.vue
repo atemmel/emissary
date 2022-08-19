@@ -6,6 +6,7 @@ import {ref} from "vue";
 import router from "./../router";
 import {useStore} from "./../store";
 import {tryReadSessionIntoStore} from "./../session";
+import AddUserToExistingConversation from "../components/AddUserToExistingConversation.vue";
 
 const store = useStore();
 
@@ -30,20 +31,35 @@ const onFriendsListChange = () => {
   friendsListChange.value = !friendsListChange.value;
 };
 
-const visibleDialog = ref<boolean>(false);
+const createNewConversationDialogVisible = ref<boolean>(false);
+
+const addUserDialogVisible = ref<boolean>(false);
 
 const hasConversation = () => currentConversationId.value != null;
 
 const onOpenNewConversationDialog = () => {
-  visibleDialog.value = true;
+  createNewConversationDialogVisible.value = true;
 };
 
 const onCloseNewConversationDialog = () => {
-  visibleDialog.value = false;
+  createNewConversationDialogVisible.value = false;
 };
 
 const onSubmitNewConversation = () => {
   onCloseNewConversationDialog();
+  onFriendsListChange();
+};
+
+const onOpenAddUserDialog = () => {
+  addUserDialogVisible.value = true;
+};
+
+const onCloseAddUserDialog = () => {
+  addUserDialogVisible.value = false;
+};
+
+const onSubmitAddUserDialog = () => {
+  onCloseAddUserDialog();
   onFriendsListChange();
 };
 
@@ -52,9 +68,14 @@ const onSubmitNewConversation = () => {
 <template>
   <div v-if="currentUserId" id="content">
     <CreateNewConversation 
-      :visible="visibleDialog" 
+      :visible="createNewConversationDialogVisible" 
       @close="onCloseNewConversationDialog" 
       @submit="onSubmitNewConversation"
+    />
+    <AddUserToExistingConversation
+      :visible="addUserDialogVisible"
+      @close="onCloseAddUserDialog"
+      @submit="onSubmitAddUserDialog"
     />
     <div id="right-col-wrapper">
       <div id="logo">
