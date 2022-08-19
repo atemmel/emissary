@@ -1,14 +1,29 @@
 <script setup lang="ts">
-import {defineProps} from "vue";
-
-defineProps<{
-  username: string;
+import {defineProps, defineEmits} from "vue";
+import {ref} from "vue";
+import type {EmissaryUser} from "./../models/EmissaryUser";
+const props = defineProps<{
+  user: EmissaryUser;
 }>();
+
+const emit = defineEmits(["added", "removed"]);
+
+const isAdded = ref<boolean>(false);
+
+const toggle = () => {
+  isAdded.value = !isAdded.value;
+  if(isAdded.value) {
+    emit("added", props.user);
+  } else {
+    emit("removed", props.user);
+  }
+}
+
 </script>
 
 <template>
-  <div class="name-div">
-    {{username}}
+  <div class="name-div" :class="{added: isAdded}" @click="toggle">
+    {{user.name}}
   </div>
 </template>
 
@@ -21,5 +36,9 @@ defineProps<{
 .name-div:hover {
   background-color: #555;
   cursor: pointer;
+}
+
+.added {
+  background-color: #888;
 }
 </style>

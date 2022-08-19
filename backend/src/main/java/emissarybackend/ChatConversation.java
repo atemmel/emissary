@@ -14,7 +14,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Entity
 public class ChatConversation {
@@ -22,7 +25,9 @@ public class ChatConversation {
 
 	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinColumn(name="EMISSARY_USER_ID")
-	@JsonIgnore
+	//@JsonIgnore
+	@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", resolver = EntityIdResolver.class, scope = EmissaryUser.class)
+	@JsonIdentityReference(alwaysAsId = true)
 	private Set<EmissaryUser> participants = new HashSet<EmissaryUser>();
 
 	@OneToMany(cascade = CascadeType.ALL)

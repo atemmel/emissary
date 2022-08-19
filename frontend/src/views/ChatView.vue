@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import axios from "axios";
 import ChatComponent from "./../components/ChatComponent.vue";
 import FriendsList from "./../components/FriendsList.vue";
-import AddUserToConversationItem from "./../components/AddUserToConversationItem.vue";
+import AddUserToConversation from "./../components/AddUserToConversation.vue";
 import {ref} from "vue";
-import {useStore} from "./../store";
-import type {EmissaryUser} from "./../models/EmissaryUser";
 import router from "./../router";
-
-const instance = axios.create({
-  baseURL: "http://localhost:8080/api",
-});
+import {useStore} from "./../store";
+import {tryReadSessionIntoStore} from "./../session";
 
 const store = useStore();
 
 const currentConversationId = ref<number|null>(null);
+
+if(!store.state.userId) {
+  tryReadSessionIntoStore();
+}
+
 const currentUserId = store.state.userId;
 if(!currentUserId) {
   router.push("/");
@@ -30,61 +30,51 @@ const onFriendsListChange = () => {
   friendsListChange.value = !friendsListChange.value;
 };
 
-const hasConversation = () => currentUserId != null;
+const visibleDialog = ref<boolean>(false);
 
-const openNewConversationDialog = () => {
-  const overlay = document.getElementById("overlay");
-  overlay.style.display = "block";
-  getListOfChattableUsers();
+const hasConversation = () => currentConversationId.value != null;
+
+const onOpenNewConversationDialog = () => {
+  visibleDialog.value = true;
 };
 
-const closeNewConversationDialog = () => {
-  const overlay = document.getElementById("overlay");
-  overlay.style.display = "none";
+const onCloseNewConversationDialog = () => {
+  visibleDialog.value = false;
 };
 
-const chattableUsers = ref<EmissaryUser[]>([]);
-
-const getListOfChattableUsers = () => {
-  const token = store.state.jwtToken;
-  instance.get("/users/", {
-    headers: {"Authorization": `Bearer ${token}`},
-  }).then((response: any) => {
-    const users = response.data as EmissaryUser[];
-    chattableUsers.value = users;
-  }).catch((err: string) => {
-    console.log(err);
-  });
+const onSubmitNewConversation = () => {
+  onCloseNewConversationDialog();
+  onFriendsListChange();
 };
 
 </script>
 
 <template>
   <div v-if="currentUserId" id="content">
-    <div id="overlay" @click="closeNewConversationDialog">
-      <div id="new-conversation-dialog">
-        <div class="new-conversation-dialog-title">
-          New conversation
-        </div>
-        <div class="conversation-list">
-          <AddUserToConversationItem 
-            v-for="(user, idx) in chattableUsers" 
-            :username="user.name" 
-            :key="idx"
-          />
-        </div>
-      </div>
-    </div>
+    <AddUserToConversation 
+      :visible="visibleDialog" 
+      @close="onCloseNewConversationDialog" 
+      @submit="onSubmitNewConversation"
+    />
     <div id="right-col-wrapper">
       <div id="logo">
         <h1>Emissary ✉</h1>
       </div>
-      <div id="new-conversation-button" @click="openNewConversationDialog">
+      <div id="new-conversation-button" @click="onOpenNewConversationDialog">
         New conversation
       </div>
-      <FriendsList @conversation-change="onConverationChange" :current-user-id="currentUserId" :friends-list-change="friendsListChange"/>
+      <FriendsList 
+        @conversation-change="onConverationChange" 
+        :current-user-id="currentUserId" 
+        :friends-list-change="friendsListChange"
+      />
     </div>
-    <ChatComponent v-if="hasConversation" :current-conversation-id="currentConversationId" :current-user-id="currentUserId" @friends-list-change="onFriendsListChange"/>
+    <ChatComponent 
+      v-if="hasConversation()" 
+      :current-conversation-id="currentConversationId" 
+      :current-user-id="currentUserId" 
+      @friends-list-change="onFriendsListChange"
+    />
   </div>
 </template>
 
@@ -119,38 +109,5 @@ const getListOfChattableUsers = () => {
 #new-conversation-button:hover {
   background-color: #555;
   cursor: pointer;
-}
-
-#overlay {
-  position: fixed;
-  z-index: 999;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: none;
-  text-align: center;
-}
-
-#new-conversation-dialog {
-  vertical-align: middle;
-  display: inline-block;
-  border: 1px solid #555;
-  border-radius: 16px;
-  background-color: var(--color-background);
-  color: var(--color-text);
-  text-align: center;
-  width: 400px;
-}
-
-.new-conversation-dialog-title {
-  padding: 26px 18px;
-  font-weight: bold;
-}
-
-.conversation-list {
-  overflow-y: auto;
-  max-height: 80vh;
 }
 </style>

@@ -16,9 +16,11 @@ export const store = createStore<State>({
 	mutations: {
 		setToken: (state: State, token: string) => {
 			state.jwtToken = token;
+			window.sessionStorage.setItem("jwtToken", token);
 		},
 		setId: (state: State, id: number) => {
 			state.userId = id;
+			window.sessionStorage.setItem("userId", String(id));
 		},
 	},
 });

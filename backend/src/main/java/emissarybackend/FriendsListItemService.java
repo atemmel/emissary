@@ -31,15 +31,29 @@ public class FriendsListItemService {
 			var conv = it.next();
 			var messages = conv.getMessages();
 
-			// ska konversationer utan meddelanden få finnas?
 			assert(messages.size() > 0);
+			if(messages.size() > 0) {
+				var lastMessage = messages.get(messages.size() - 1);
+				var lastAuthor = lastMessage.getAuthor();
 
-			var lastMessage = messages.get(messages.size() - 1);
-			var lastAuthor = lastMessage.getAuthor();
+				var item = new FriendsListItem(conv.getId(), 
+					lastAuthor.getName(), lastMessage.getContents());
+				items.add(item);
+			} else {
+				var lastMessage = "No messages sent";
+				var participants = new ArrayList<EmissaryUser>(conv.getParticipants());
+				participants.removeIf((usr) -> usr.getId() == userId);
+				var lastAuthor = "";
+				for(int i = 0; i < participants.size(); i++) {
+					lastAuthor += participants.get(i).getName();
+					if(i + 1 < participants.size()) {
+						lastAuthor += ", ";
+					}
+				}
+				var item = new FriendsListItem(conv.getId(), lastAuthor, lastMessage);
+				items.add(item);
+			}
 
-			var item = new FriendsListItem(conv.getId(), 
-				lastAuthor.getName(), lastMessage.getContents());
-			items.add(item);
 		}
 
 		return items;

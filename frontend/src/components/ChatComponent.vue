@@ -4,6 +4,9 @@ import type {ChatMessage} from "./../models/ChatMessage";
 import ChatBubble from "./../components/ChatBubble.vue";
 import {ref, onMounted, watch, nextTick} from "vue";
 import {Client} from "@stomp/stompjs";
+import {useStore} from "./../store";
+
+const store = useStore();
 
 const props = defineProps<{
   currentConversationId: number | null;
@@ -13,7 +16,7 @@ const props = defineProps<{
 const emit = defineEmits(["friendsListChange"]);
 
 const instance = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "http://localhost:8080/api",
 });
 
 const client = new Client({
@@ -57,7 +60,10 @@ const getAllMessagesInConversation = () => {
   if(props.currentConversationId == null) {
     return;
   }
-  instance.get("/conversations/" + props.currentConversationId).then((response: any) => {
+  const token = store.state.jwtToken;
+  instance.get("/conversations/" + props.currentConversationId,
+    {headers: {"Authorization": `Bearer ${token}`},},
+  ).then((response: any) => {
     chatMessages.value = response.data.messages;
   });
 };
@@ -75,9 +81,9 @@ watch(() => props.currentConversationId,
 watch(() => chatMessages.value.length,
   async () => {
     nextTick(() => {
-      const anchor = document.getElementById("bubbles-anchor");
-      if(anchor != null) {
-        anchor.scrollIntoView();
+      const bubbles = document.getElementById("chat-bubbles");
+      if(bubbles != null) {
+        bubbles.scrollTop = bubbles.scrollHeight;
       }
     });
   }

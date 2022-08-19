@@ -3,9 +3,15 @@ import {ref} from "vue";
 import axios from "axios";
 import {useStore} from "./../store";
 import {useRouter} from "vue-router";
+import { tryReadSessionIntoStore } from "@/session";
 
 const store = useStore();
 const router = useRouter();
+
+tryReadSessionIntoStore();
+if(store.state.userId) {
+  router.push("/chat");
+}
 
 const username = ref<string>("");
 const password = ref<string>("");
@@ -56,8 +62,6 @@ const auth = (url: string, data: any) => {
 const handleRepsonse = (data: any) => {
   store.commit("setToken", data["jwt-token"]);
   store.commit("setId", data.userId);
-  console.log("Token stored");
-  console.log("Given id:", data.userId);
   router.push("/chat");
   isAuthorizing.value = false;
 };
