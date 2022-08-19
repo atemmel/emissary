@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import axios from "axios";
-import AddUserToConversationItem from "./../components/AddUserToConversationItem.vue";
-import OverlayDialog from "./../components/OverlayDialog.vue";
+import AddUserToConversationItem from "./AddUserToConversationItem.vue";
 import type {EmissaryUser} from "./../models/EmissaryUser";
+import OverlayDialog from "./OverlayDialog.vue";
 import {ref, watch, defineEmits} from "vue";
 import {useStore} from "./../store";
 
 const props = defineProps<{
   visible: boolean;
+  title: string;
+  submitTitle: string;
 }>();
 
 const store = useStore();
@@ -18,17 +20,17 @@ const instance = axios.create({
   baseURL: "http://localhost:8080/api",
 });
 
-const chattableUsers = ref<EmissaryUser[]>([]);
+const allUsers = ref<EmissaryUser[]>([]);
 
-const addedUsers = ref<EmissaryUser[]>([]);
+const selectedUsers = ref<EmissaryUser[]>([]);
 
-const getListOfChattableUsers = () => {
+const getAllUsersNotSelf = () => {
   const token = store.state.jwtToken;
   instance.get("/users/", {
     headers: {"Authorization": `Bearer ${token}`},
   }).then((response: any) => {
     const users = response.data as EmissaryUser[];
-    chattableUsers.value = users.filter((usr) => usr.id != store.state.userId);
+    allUsers.value = users.filter((usr) => usr.id != store.state.userId);
   }).catch((err: string) => {
     console.log(err);
   });
@@ -37,66 +39,50 @@ const getListOfChattableUsers = () => {
 watch(() => props.visible,
   async () => {
     if(props.visible) {
-      addedUsers.value = chattableUsers.value = [];
-      getListOfChattableUsers();
+      selectedUsers.value = allUsers.value = [];
+      getAllUsersNotSelf();
     }
   }
 );
 
-const sendEmit = () => {
-  addedUsers.value = [];
+const sendClose = () => {
+  selectedUsers.value = [];
   emit("close");
 };
 
 const addUser = (who: EmissaryUser) => {
-  addedUsers.value.push(who);
+  selectedUsers.value.push(who);
 };
 
 const removeUser = (who: EmissaryUser) => {
-  const idx = addedUsers.value.indexOf(who);
+  const idx = selectedUsers.value.indexOf(who);
   if(idx == -1) {
     return;
   }
-  addedUsers.value.splice(idx, 1);
+  selectedUsers.value.splice(idx, 1);
 };
 
-const submit = () => {
-  const idList = addedUsers.value.map((usr) => usr.id);
-  if(idList.length <= 0) {
-    return;
-  }
-  idList.push(store.state.userId);
-  const token = store.state.jwtToken;
-  instance.post("/conversations/create", {
-      participants: idList,
-      messages: [],
-    }, {
-    headers: {"Authorization": `Bearer ${token}`},
-  }).then(() => {
-    emit("submit");
-    console.log("Good");
-  }).catch(() => {
-    console.log("Bad");
-  });
-};
+const maySubmit = () => selectedUsers.value.length > 0;
 
-const maySubmit = () => addedUsers.value.length > 0;
+const sendSubmit = () => {
+  emit("submit", selectedUsers.value);
+};
 
 </script>
 
 <template>
-  <OverlayDialog :visible="visible" @close="sendEmit">
+  <OverlayDialog :visible="visible" @close="sendClose">
     <div class="new-conversation-dialog-title">
-      New conversation
+      {{title}}
     </div>
     <div class="mini-added-list">
-      <div v-for="(user, idx) in addedUsers" :key="idx" class="mini-added-list-item">
+      <div v-for="(user, idx) in selectedUsers" :key="idx" class="mini-added-list-item">
         {{user.name}}
       </div>
     </div>
     <div class="conversation-list">
       <AddUserToConversationItem 
-        v-for="(user, idx) in chattableUsers" 
+        v-for="(user, idx) in allUsers" 
         :user="user" 
         :key="idx"
         @added="addUser"
@@ -105,14 +91,13 @@ const maySubmit = () => addedUsers.value.length > 0;
     </div>
     <div v-show="maySubmit()" 
       class="submit-conversation-button" 
-      @click="submit">
-        Start conversation
+      @click="sendSubmit">
+        {{submitTitle}}
     </div>
   </OverlayDialog>
 </template>
 
-<style scoped> 
-
+<style scoped>
 .new-conversation-dialog-title {
   padding: 26px 18px;
   font-weight: bold;

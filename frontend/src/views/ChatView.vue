@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ChatComponent from "./../components/ChatComponent.vue";
 import FriendsList from "./../components/FriendsList.vue";
-import AddUserToConversation from "./../components/AddUserToConversation.vue";
+import CreateNewConversation from "./../components/CreateNewConversation.vue";
 import {ref} from "vue";
 import router from "./../router";
 import {useStore} from "./../store";
@@ -51,7 +51,7 @@ const onSubmitNewConversation = () => {
 
 <template>
   <div v-if="currentUserId" id="content">
-    <AddUserToConversation 
+    <CreateNewConversation 
       :visible="visibleDialog" 
       @close="onCloseNewConversationDialog" 
       @submit="onSubmitNewConversation"
