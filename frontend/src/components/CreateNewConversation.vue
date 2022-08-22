@@ -41,6 +41,7 @@ const onSubmit = (users: EmissaryUser[]) => {
     :visible="visible"
     title="New conversation" 
     submit-title="Start conversation"
+    :filter="null"
     @submit="onSubmit"
   />
 </template>

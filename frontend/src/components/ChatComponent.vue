@@ -14,7 +14,7 @@ const props = defineProps<{
   currentUserId: number;
 }>();
 
-const emit = defineEmits(["friendsListChange"]);
+const emit = defineEmits(["friendsListChange", "openAddUserDialog"]);
 
 const instance = axios.create({
   baseURL: "http://localhost:8080/api",
@@ -42,6 +42,7 @@ client.activate();
 const message = ref<string>("");
 
 const chatMessages = ref<ChatMessage[]>([]);
+const chatParticipants = ref<number[]>([]);
 
 const getAllMessagesInConversation = () => {
   if(props.currentConversationId == null) {
@@ -51,8 +52,9 @@ const getAllMessagesInConversation = () => {
   instance.get("/conversations/" + props.currentConversationId,
     {headers: {"Authorization": `Bearer ${token}`},},
   ).then((response: any) => {
-    console.log(response.data.messages);
+    console.log(response.data);
     chatMessages.value = response.data.messages;
+    chatParticipants.value = response.data.participants;
   });
 };
 
@@ -97,12 +99,16 @@ const sendMessage = (e: Event) => {
   });
   message.value = "";
 };
+
+const emitAddUser = () => {
+  emit("openAddUserDialog", chatParticipants);
+};
 </script>
 
 <template>
   <div id="chat">
     <div id="chat-options" v-show="currentConversationId != null">
-      <div class="chat-option-wrapper">
+      <div class="chat-option-wrapper" @click="emitAddUser">
           Invite to chat
       </div>
       <div class="chat-option-wrapper">

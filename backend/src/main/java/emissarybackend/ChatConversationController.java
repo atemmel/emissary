@@ -1,5 +1,6 @@
 package emissarybackend;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -11,14 +12,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 @RestController
 @RequestMapping("/api")
 class ChatConversationController {
 	private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
 	private final ChatConversationRepository repo;
+	private final EmissaryUserRepository userRepo;
 
-	ChatConversationController(ChatConversationRepository repo) {
+	ChatConversationController(ChatConversationRepository repo, EmissaryUserRepository userRepo) {
 		this.repo = repo;
+		this.userRepo = userRepo;
 	}
 
 	@GetMapping("/conversations")
@@ -33,11 +40,46 @@ class ChatConversationController {
 		);
 	}
 
-	@PostMapping("conversations/create")
+	@PostMapping("/conversations/create")
 	public void create(@RequestBody ChatConversation conversation) {
 		log.info("Saved new conversation with " 
 			+ conversation.getParticipants().size()
 			+ " participants");
 		repo.save(conversation);
+	}
+
+	@PostMapping("/conversations/addParticipants")
+	public void addParticipants(@RequestBody AddEmissaryUsersToConversation autc) {
+		log.info("Adding " + autc.users.size() + " users to a conversation");
+		var conversation = repo.findById(autc.getConversationId()).orElseThrow(() -> new RuntimeException("Could not find conversation with id " + autc.conversationId));
+		for (var userId : autc.getUsers()) {
+			var user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("Could not find user with id " + userId));
+			conversation.addParticipant(user);
+		}
+		repo.save(conversation);
+	}
+
+	public static class AddEmissaryUsersToConversation  {
+		private List<Long> users = new ArrayList<>();
+		private Long conversationId;
+
+		AddEmissaryUsersToConversation() {
+		}
+
+		List<Long> getUsers() {
+			return users;
+		}
+
+		void setUsers(List<Long> users) {
+			this.users = users;
+		}
+
+		Long getConversationId() {
+			return conversationId;
+		}
+
+		void setConversationId(Long conversationId) {
+			this.conversationId = conversationId;
+		}
 	}
 }

@@ -10,6 +10,8 @@ const props = defineProps<{
   visible: boolean;
   title: string;
   submitTitle: string;
+  // optional filtering of users to be shown
+  filter: ((user: EmissaryUser) => boolean) | null;
 }>();
 
 const store = useStore();
@@ -31,6 +33,9 @@ const getAllUsersNotSelf = () => {
   }).then((response: any) => {
     const users = response.data as EmissaryUser[];
     allUsers.value = users.filter((usr) => usr.id != store.state.userId);
+    if(props.filter != null) {
+      allUsers.value = allUsers.value.filter(props.filter);
+    }
   }).catch((err: string) => {
     console.log(err);
   });

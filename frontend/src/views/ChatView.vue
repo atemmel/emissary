@@ -12,6 +12,8 @@ const store = useStore();
 
 const currentConversationId = ref<number|null>(null);
 
+const chatParticipants = ref<number[]>([]);
+
 if(!store.state.userId) {
   tryReadSessionIntoStore();
 }
@@ -50,8 +52,10 @@ const onSubmitNewConversation = () => {
   onFriendsListChange();
 };
 
-const onOpenAddUserDialog = () => {
+const onOpenAddUserDialog = (participants: number[]) => {
   addUserDialogVisible.value = true;
+  chatParticipants.value = participants;
+  onFriendsListChange();
 };
 
 const onCloseAddUserDialog = () => {
@@ -72,8 +76,11 @@ const onSubmitAddUserDialog = () => {
       @close="onCloseNewConversationDialog" 
       @submit="onSubmitNewConversation"
     />
+    <!-- The chatParticipants.value should not work -->
     <AddUserToExistingConversation
       :visible="addUserDialogVisible"
+      :chat-participants="chatParticipants.value"
+      :current-conversation-id="currentConversationId"
       @close="onCloseAddUserDialog"
       @submit="onSubmitAddUserDialog"
     />
@@ -95,6 +102,7 @@ const onSubmitAddUserDialog = () => {
       :current-conversation-id="currentConversationId" 
       :current-user-id="currentUserId" 
       @friends-list-change="onFriendsListChange"
+      @open-add-user-dialog="onOpenAddUserDialog"
     />
   </div>
 </template>
