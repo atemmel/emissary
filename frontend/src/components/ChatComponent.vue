@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import type {ChatMessage} from "./../models/ChatMessage";
+import type {ChatMessage, ChatMessageAttachment} from "./../models/ChatMessage";
 import ChatBubble from "./../components/ChatBubble.vue";
 import UploadFileButton from "./../components/UploadFileButton.vue";
 import {ref, onMounted, watch, nextTick} from "vue";
@@ -30,10 +30,12 @@ const client = new Client({
 client.onConnect = () => {
   console.log("Client is connected");
   client.subscribe("/chat", (msg: any) => {
-    const recvMsg = JSON.parse(msg.body);
-    chatMessages.value.push(recvMsg);
+    if(msg.body) {
+      const recvMsg = JSON.parse(msg.body);
+      chatMessages.value.push(recvMsg);
 
-    emit("newMessage");
+      emit("newMessage");
+    }
   });
 };
 
@@ -91,6 +93,7 @@ const sendMessage = (e: Event) => {
     contents: message.value,
     conversation: props.currentConversationId,
     timestamp: new Date(),
+    attachment: null,
   };
 
   client.publish({
@@ -107,6 +110,47 @@ const emitInviteUser = () => {
 const emitLeave = () => {
   emit("openLeaveDialog");
 };
+
+const onUpload = (file: File) => {
+  if(!client.active || !props.currentConversationId) {
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  const token = store.state.jwtToken;
+  instance.post("/attachments/create", formData, {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+  /*
+const onUpload = (content: ChatMessageAttachment) => {
+  if(!client.active || !props.currentConversationId) {
+    return;
+  }
+  
+
+  // old websocket attempt
+  const msg: ChatMessage = {
+    id: null,
+    author: props.currentUserId,
+    contents: "",
+    conversation: props.currentConversationId,
+    timestamp: new Date(),
+    attachment: content,
+  };
+
+  console.log("Publishing:", msg);
+  client.publish({
+    destination: "/chat/send",
+    body: JSON.stringify(msg),
+  });
+};
+  */
 </script>
 
 <template>
@@ -130,7 +174,9 @@ const emitLeave = () => {
     </div>
     <div id="chat-field-wrapper">
       <div id="chat-field">
-        <UploadFileButton />
+        <UploadFileButton 
+          @upload="onUpload"
+        />
         <textarea 
           v-model="message" 
           placeholder="Write your message here..." 

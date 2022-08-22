@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
@@ -19,18 +20,26 @@ public class ChatMessage {
 	
 	private String contents;
 
-	private byte[] attachment;
+	@OneToOne
+	private ChatMessageAttachment attachment;
 
 	@ManyToOne
 	@JoinColumn(name = "CHAT_CONVERSATION_ID")
-	//@JsonIgnore
-	@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", resolver = EntityIdResolver.class, scope = ChatConversation.class)
+	@JsonIdentityInfo(
+		generator = ObjectIdGenerators.PropertyGenerator.class, 
+		property = "id", 
+		resolver = EntityIdResolver.class, 
+		scope = ChatConversation.class)
 	@JsonIdentityReference(alwaysAsId = true)
 	private ChatConversation conversation;
 
 	@ManyToOne
 	@JoinColumn(name = "EMISSARY_USER_ID")
-	@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", resolver = EntityIdResolver.class, scope = EmissaryUser.class)
+	@JsonIdentityInfo(
+		generator = ObjectIdGenerators.PropertyGenerator.class, 
+		property = "id", 
+		resolver = EntityIdResolver.class, 
+		scope = EmissaryUser.class)
 	@JsonIdentityReference(alwaysAsId = true)
 	private EmissaryUser author;
 
@@ -40,6 +49,7 @@ public class ChatMessage {
 		contents = "";
 		id = 0l;
 		timestamp = new Date();
+		attachment = null;
 	}
 
 	public ChatMessage(ChatMessage other) {
@@ -71,11 +81,11 @@ public class ChatMessage {
 		this.timestamp = timestamp;
 	}
 
-	public byte[] getAttachment() {
+	public ChatMessageAttachment getAttachment() {
 		return attachment;
 	}
 
-	public void setAttachment(byte[] attachment) {
+	public void setAttachment(ChatMessageAttachment attachment) {
 		this.attachment = attachment;
 	}
 

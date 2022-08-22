@@ -4,4 +4,11 @@ export interface ChatMessage {
   author: number;
   conversation: number;
   timestamp: Date;
+  attachment: ChatMessageAttachment|null;
+}
+
+export interface ChatMessageAttachment {
+	name: string;
+	type: string;
+	bytes: string;
 }

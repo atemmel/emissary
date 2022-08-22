@@ -8,15 +8,23 @@ const props = defineProps<{
 
 const isUser = (id: number) => props.currentUserId === id;
 
+const isImage = () => props.message.attachment 
+    && props.message.attachment.type.startsWith("image/");
+
 </script>
 
 <template>
   <div class="bubble-row">
-    <div v-if="isUser(message.author)" class="bubble user">
+    <div 
+      v-if="message.attachment == null"
+      :class="{'user': isUser(message.author), 'stranger': !isUser(message.author)}" class="bubble">
       {{message.contents}}
     </div>
-    <div v-else class="bubble stranger">
-      {{message.contents}}
+    <div v-else-if="isImage()">
+      <img 
+        src="data:{{message.attachment.type}};base64 {{message.attachment.bytes}}" 
+        alt="{{message.attachment.name}}"
+      />
     </div>
   </div>
 </template>

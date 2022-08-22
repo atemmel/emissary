@@ -23,9 +23,12 @@ class ChatMessageController {
 
 	private final ChatConversationRepository conversationRepo;
 
-	ChatMessageController(ChatMessageRepository chatRepo, ChatConversationRepository conversationRepo) {
+	private final ChatMessageAttachmentRepository attachmentRepo;
+
+	ChatMessageController(ChatMessageRepository chatRepo, ChatConversationRepository conversationRepo, ChatMessageAttachmentRepository attachmentRepo) {
 		this.chatRepo = chatRepo;
 		this.conversationRepo = conversationRepo;
+		this.attachmentRepo = attachmentRepo;
 	}
 
 	@GetMapping("/messages")
@@ -39,6 +42,21 @@ class ChatMessageController {
 	@SendTo("/chat")
 	@Transactional
 	public ChatMessage newMessage(ChatMessage message) {
+		log.info("Begin message handling...");
+		var contents = message.getContents();
+		var attachment = message.getAttachment();
+		boolean lacksMessage = contents.isEmpty() || contents.isBlank();
+		boolean lacksAttachment = attachment == null || attachment.getBytes().length <= 0;
+		if(lacksMessage && lacksAttachment) {
+			log.info("Did not store message, as both the attachment and the message contents were empty");
+			return null;
+		}
+
+		if(!lacksAttachment) {
+			log.info("Saved new message attachment");
+			message.setAttachment(attachmentRepo.save(attachment));
+		}
+
 		message = chatRepo.save(message);
 		var convId = message.getConversation().getId();
 		var conv = conversationRepo.findById(convId).orElseThrow(() -> new RuntimeException("Could not find message recipient"));
