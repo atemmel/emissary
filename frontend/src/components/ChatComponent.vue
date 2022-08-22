@@ -2,7 +2,7 @@
 import axios from "axios";
 import type {ChatMessage} from "./../models/ChatMessage";
 import ChatBubble from "./../components/ChatBubble.vue";
-import PlusIcon from "./../components/PlusIcon.vue";
+import UploadFileButton from "./../components/UploadFileButton.vue";
 import {ref, onMounted, watch, nextTick} from "vue";
 import {Client} from "@stomp/stompjs";
 import {useStore} from "./../store";
@@ -130,9 +130,7 @@ const emitLeave = () => {
     </div>
     <div id="chat-field-wrapper">
       <div id="chat-field">
-        <div id="upload-button">
-          <PlusIcon></PlusIcon>
-        </div>
+        <UploadFileButton />
         <textarea 
           v-model="message" 
           placeholder="Write your message here..." 
@@ -198,18 +196,6 @@ const emitLeave = () => {
 }
 
 .chat-option-wrapper:hover {
-  background : #555;
-  cursor: pointer;
-}
-
-#upload-button {
-  float: right;
-  background : #444;
-  padding: 1em;
-  border-radius: 16px;
-}
-
-#upload-button:hover {
   background : #555;
   cursor: pointer;
 }
