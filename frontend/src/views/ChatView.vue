@@ -29,7 +29,7 @@ const onConverationChange = (newId: number) => {
 
 const friendsListChange = ref<boolean>(false);
 
-const onFriendsListChange = () => {
+const updateFriendsList = () => {
   friendsListChange.value = !friendsListChange.value;
 };
 
@@ -49,13 +49,13 @@ const onCloseNewConversationDialog = () => {
 
 const onSubmitNewConversation = () => {
   onCloseNewConversationDialog();
-  onFriendsListChange();
+  updateFriendsList();
 };
 
 const onOpenAddUserDialog = (participants: number[]) => {
   addUserDialogVisible.value = true;
   chatParticipants.value = participants;
-  onFriendsListChange();
+  updateFriendsList();
 };
 
 const onCloseAddUserDialog = () => {
@@ -64,7 +64,7 @@ const onCloseAddUserDialog = () => {
 
 const onSubmitAddUserDialog = () => {
   onCloseAddUserDialog();
-  onFriendsListChange();
+  updateFriendsList();
 };
 
 </script>
@@ -101,7 +101,7 @@ const onSubmitAddUserDialog = () => {
       v-if="hasConversation()" 
       :current-conversation-id="currentConversationId" 
       :current-user-id="currentUserId" 
-      @friends-list-change="onFriendsListChange"
+      @newMessage="updateFriendsList"
       @open-add-user-dialog="onOpenAddUserDialog"
     />
   </div>

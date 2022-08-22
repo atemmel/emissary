@@ -14,7 +14,7 @@ const props = defineProps<{
   currentUserId: number;
 }>();
 
-const emit = defineEmits(["friendsListChange", "openAddUserDialog"]);
+const emit = defineEmits(["newMessage", "openAddUserDialog"]);
 
 const instance = axios.create({
   baseURL: "http://localhost:8080/api",
@@ -33,7 +33,7 @@ client.onConnect = () => {
     const recvMsg = JSON.parse(msg.body);
     chatMessages.value.push(recvMsg);
 
-    emit("friendsListChange");
+    emit("newMessage");
   });
 };
 
