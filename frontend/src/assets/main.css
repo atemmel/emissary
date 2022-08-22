@@ -1,1 +1,6 @@
 @import "./base.css";
+
+.dialog-title {
+  padding: 26px 18px;
+  font-weight: bold;
+}

@@ -77,7 +77,7 @@ const sendSubmit = () => {
 
 <template>
   <OverlayDialog :visible="visible" @close="sendClose">
-    <div class="new-conversation-dialog-title">
+    <div class="dialog-title">
       {{title}}
     </div>
     <div class="mini-added-list">
@@ -103,11 +103,6 @@ const sendSubmit = () => {
 </template>
 
 <style scoped>
-.new-conversation-dialog-title {
-  padding: 26px 18px;
-  font-weight: bold;
-}
-
 .conversation-list {
   overflow-y: auto;
   max-height: 80vh;

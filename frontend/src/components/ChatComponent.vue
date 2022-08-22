@@ -14,7 +14,7 @@ const props = defineProps<{
   currentUserId: number;
 }>();
 
-const emit = defineEmits(["newMessage", "openAddUserDialog"]);
+const emit = defineEmits(["newMessage", "openInviteUserDialog", "openLeaveDialog"]);
 
 const instance = axios.create({
   baseURL: "http://localhost:8080/api",
@@ -100,18 +100,22 @@ const sendMessage = (e: Event) => {
   message.value = "";
 };
 
-const emitAddUser = () => {
-  emit("openAddUserDialog", chatParticipants);
+const emitInviteUser = () => {
+  emit("openInviteUserDialog", chatParticipants);
+};
+
+const emitLeave = () => {
+  emit("openLeaveDialog");
 };
 </script>
 
 <template>
   <div id="chat">
     <div id="chat-options" v-show="currentConversationId != null">
-      <div class="chat-option-wrapper" @click="emitAddUser">
+      <div class="chat-option-wrapper" @click="emitInviteUser">
           Invite to chat
       </div>
-      <div class="chat-option-wrapper">
+      <div class="chat-option-wrapper" @click="emitLeave">
           <span class="evil">Leave Chat</span>
       </div>
     </div>

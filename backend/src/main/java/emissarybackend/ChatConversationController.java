@@ -49,21 +49,32 @@ class ChatConversationController {
 	}
 
 	@PostMapping("/conversations/addParticipants")
-	public void addParticipants(@RequestBody AddEmissaryUsersToConversation autc) {
-		log.info("Adding " + autc.users.size() + " users to a conversation");
-		var conversation = repo.findById(autc.getConversationId()).orElseThrow(() -> new RuntimeException("Could not find conversation with id " + autc.conversationId));
-		for (var userId : autc.getUsers()) {
+	public void addParticipants(@RequestBody ConversationUsersDelta delta) {
+		log.info("Adding " + delta.users.size() + " users to a conversation");
+		var conversation = repo.findById(delta.getConversationId()).orElseThrow(() -> new RuntimeException("Could not find conversation with id " + delta.conversationId));
+		for (var userId : delta.getUsers()) {
 			var user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("Could not find user with id " + userId));
 			conversation.addParticipant(user);
 		}
 		repo.save(conversation);
 	}
 
-	public static class AddEmissaryUsersToConversation  {
+	@PostMapping("/conversations/removeParticipants")
+	public void removeParticipants(@RequestBody ConversationUsersDelta delta) {
+		log.info("Removing " + delta.users.size() + " users from a conversation");
+		var conversation = repo.findById(delta.getConversationId()).orElseThrow(() -> new RuntimeException("Could not find conversation with id " + delta.conversationId));
+		for(var userId : delta.getUsers()) {
+			var user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("Could not find user with id " + userId));
+			conversation.removeParticipant(user);
+		}
+		repo.save(conversation);
+	}
+
+	public static class ConversationUsersDelta  {
 		private List<Long> users = new ArrayList<>();
 		private Long conversationId;
 
-		AddEmissaryUsersToConversation() {
+		ConversationUsersDelta() {
 		}
 
 		List<Long> getUsers() {

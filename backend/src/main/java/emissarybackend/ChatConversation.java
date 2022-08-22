@@ -69,6 +69,10 @@ public class ChatConversation {
 		this.participants.add(participant);
 	}
 
+	public void removeParticipant(EmissaryUser participant) {
+		this.participants.remove(participant);
+	}
+
 	public List<ChatMessage> getMessages() {
 		return messages;
 	}

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import ChatComponent from "./../components/ChatComponent.vue";
 import FriendsList from "./../components/FriendsList.vue";
-import CreateNewConversation from "./../components/CreateNewConversation.vue";
+import CreateNewConversationDialog from "./../components/CreateNewConversationDialog.vue";
 import {ref} from "vue";
 import router from "./../router";
 import {useStore} from "./../store";
 import {tryReadSessionIntoStore} from "./../session";
-import AddUserToExistingConversation from "../components/AddUserToExistingConversation.vue";
+import InviteUsersDialog from "../components/InviteUsersDialog.vue";
+import LeaveConversationDialog from "../components/LeaveConversationDialog.vue";
 
 const store = useStore();
 
@@ -35,7 +36,9 @@ const updateFriendsList = () => {
 
 const createNewConversationDialogVisible = ref<boolean>(false);
 
-const addUserDialogVisible = ref<boolean>(false);
+const inviteUserDialogVisible = ref<boolean>(false);
+
+const leaveConversationDialogVisible = ref<boolean>(false);
 
 const hasConversation = () => currentConversationId.value != null;
 
@@ -52,18 +55,32 @@ const onSubmitNewConversation = () => {
   updateFriendsList();
 };
 
-const onOpenAddUserDialog = (participants: number[]) => {
-  addUserDialogVisible.value = true;
+const onOpenInviteUserDialog = (participants: number[]) => {
+  inviteUserDialogVisible.value = true;
   chatParticipants.value = participants;
   updateFriendsList();
 };
 
-const onCloseAddUserDialog = () => {
-  addUserDialogVisible.value = false;
+const onCloseInviteUserDialog = () => {
+  inviteUserDialogVisible.value = false;
 };
 
-const onSubmitAddUserDialog = () => {
-  onCloseAddUserDialog();
+const onSubmitInviteUserDialog = () => {
+  onCloseInviteUserDialog();
+  updateFriendsList();
+};
+
+const onOpenLeaveConversationDialog = () => {
+  leaveConversationDialogVisible.value = true;
+};
+
+const onCloseLeaveConversationDialog = () => {
+  leaveConversationDialogVisible.value = false;
+};
+
+const onSubmitLeaveConversationDialog = () => {
+  onCloseLeaveConversationDialog();
+  currentConversationId.value = null;
   updateFriendsList();
 };
 
@@ -71,18 +88,25 @@ const onSubmitAddUserDialog = () => {
 
 <template>
   <div v-if="currentUserId" id="content">
-    <CreateNewConversation 
+    <CreateNewConversationDialog
       :visible="createNewConversationDialogVisible" 
       @close="onCloseNewConversationDialog" 
       @submit="onSubmitNewConversation"
     />
     <!-- The chatParticipants.value should not work -->
-    <AddUserToExistingConversation
-      :visible="addUserDialogVisible"
+    <InviteUsersDialog
+      :visible="inviteUserDialogVisible"
       :chat-participants="chatParticipants.value"
       :current-conversation-id="currentConversationId"
-      @close="onCloseAddUserDialog"
-      @submit="onSubmitAddUserDialog"
+      @close="onCloseInviteUserDialog"
+      @submit="onSubmitInviteUserDialog"
+    />
+    <LeaveConversationDialog
+      :visible="leaveConversationDialogVisible"
+      :current-user-id="currentUserId"
+      :current-conversation-id="currentConversationId"
+      @close="onCloseLeaveConversationDialog"
+      @submit="onSubmitLeaveConversationDialog"
     />
     <div id="right-col-wrapper">
       <div id="logo">
@@ -102,7 +126,8 @@ const onSubmitAddUserDialog = () => {
       :current-conversation-id="currentConversationId" 
       :current-user-id="currentUserId" 
       @newMessage="updateFriendsList"
-      @open-add-user-dialog="onOpenAddUserDialog"
+      @open-invite-user-dialog="onOpenInviteUserDialog"
+      @open-leave-dialog="onOpenLeaveConversationDialog"
     />
   </div>
 </template>
