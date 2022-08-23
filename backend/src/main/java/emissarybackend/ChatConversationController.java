@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,6 +28,42 @@ class ChatConversationController {
 	@GetMapping("/conversations")
 	public List<ChatConversation> all() {
 		return repo.findAll();
+	}
+
+	@GetMapping("/conversations/{id}/slice")
+	public List<ChatMessage> slice(
+			@PathVariable("id") Long conversationId,
+			@RequestParam("from") int from, 
+			@RequestParam("to") int to) {
+		if(from > to && to >= 0) {
+			throw new RuntimeException("Cannot create slice from " + from + " to " + to);
+		}
+		final var conversation = repo.findById(conversationId).orElseThrow(
+			() -> new RuntimeException("Could not find conversation with id " + conversationId));
+		final var messages = conversation.getMessages();
+
+		var l = from;
+		var r = to;
+
+		// negative index wrap-around
+		if(l < 0) {
+			l += messages.size();
+		}
+		if(r < 0) {
+			r += messages.size();
+		}
+
+		final var poorSlice = l < 0 
+			|| l >= messages.size()
+			|| r < 0 
+			|| r > messages.size();
+
+		if(poorSlice) {
+			throw new RuntimeException("Cannot create slice from " + from + " to " + to);
+		}
+
+		log.info("Final slice goes from " + l + " to " + r);
+		return messages.subList(l, r);
 	}
 
 	@GetMapping("/conversations/{id}")

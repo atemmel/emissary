@@ -20,6 +20,13 @@ const instance = axios.create({
   baseURL: "http://localhost:8080/api",
 });
 
+const message = ref<string>("");
+
+const chatMessages = ref<ChatMessage[]>([]);
+const chatParticipants = ref<number[]>([]);
+
+const head = ref<number|null>(null);
+
 const client = new Client({
   brokerURL: "ws://localhost:8080/ws/websocket",
   reconnectDelay: 5000,
@@ -30,21 +37,39 @@ const client = new Client({
 client.onConnect = () => {
   console.log("Client is connected");
   client.subscribe("/chat", (msg: any) => {
-    if(msg.body) {
-      const recvMsg = JSON.parse(msg.body);
-      chatMessages.value.push(recvMsg);
-
-      emit("newMessage");
+    if(!msg.body) {
+      return;
     }
+    const recvMsg = JSON.parse(msg.body);
+    chatMessages.value.push(recvMsg);
+    emit("newMessage");
   });
+  client.subscribe("/chat/head", (msg: any) => {
+    if(msg.body == null) {
+      console.log("Head ping failed on arrival");
+      return;
+    }
+
+    const recvMsg = JSON.parse(msg.body);
+
+    if(head.value == null) {
+      console.log("Ignoring head ping");
+      return;
+    }
+
+    const delta = recvMsg.head - head.value;
+    if(delta > 0) {
+      const from = -1 + -delta;
+      const to = -1;
+      getMessageSlice(from, to);
+    }
+
+    head.value = recvMsg.head;
+  });
+  setInterval(headPing, 3000);
 };
 
 client.activate();
-
-const message = ref<string>("");
-
-const chatMessages = ref<ChatMessage[]>([]);
-const chatParticipants = ref<number[]>([]);
 
 const getAllMessagesInConversation = () => {
   if(props.currentConversationId == null) {
@@ -56,29 +81,34 @@ const getAllMessagesInConversation = () => {
   ).then((response: any) => {
     chatMessages.value = response.data.messages;
     chatParticipants.value = response.data.participants;
+    head.value = response.data.messages.length;
   });
 };
 
-onMounted(() => {
-  getAllMessagesInConversation();
-});
-
-watch(() => props.currentConversationId,
-  async () => {
-    getAllMessagesInConversation();
+const getMessageSlice = (from: number, to: number) => {
+  if(props.currentConversationId == null) {
+    return;
   }
-);
-
-watch(() => chatMessages.value.length,
-  async () => {
-    nextTick(() => {
-      const bubbles = document.getElementById("chat-bubbles");
-      if(bubbles != null) {
-        bubbles.scrollTop = bubbles.scrollHeight;
-      }
-    });
-  }
-);
+  const token = store.state.jwtToken;
+  const url = "/conversations/" 
+    + props.currentConversationId
+    + "/slice?from="
+    + from
+    + "&to="
+    + to;
+  instance.get(url, 
+    {headers: {"Authorization": `Bearer ${token}`}},
+  ).then((response: any) => {
+    console.log(response.data);
+    if(!response || !response.data) {
+      return;
+    }
+    const newMessages = response.data as ChatMessage[];
+    for(const msg of newMessages) {
+      chatMessages.value.push(msg);
+    }
+  });
+};
 
 const sendMessage = (e: Event) => {
   e.preventDefault();
@@ -102,12 +132,14 @@ const sendMessage = (e: Event) => {
   message.value = "";
 };
 
-const emitInviteUser = () => {
-  emit("openInviteUserDialog", chatParticipants);
-};
-
-const emitLeave = () => {
-  emit("openLeaveDialog");
+const headPing = () => {
+  if(!client.active || !props.currentConversationId) {
+    return;
+  }
+  client.publish({
+    destination: "/chat/askhead/" + props.currentConversationId,
+    body: JSON.stringify(props.currentConversationId),
+  });
 };
 
 const onUpload = (file: File) => {
@@ -125,9 +157,38 @@ const onUpload = (file: File) => {
       "Authorization": `Bearer ${token}`,
       "Content-Type": "multipart/form-data",
     },
-  }).then(() => {
-    //console.log(response.data);
   });
+  headPing();
+};
+
+onMounted(() => {
+  getAllMessagesInConversation();
+  getMessageSlice(0, 2);
+});
+
+watch(() => props.currentConversationId,
+  async () => {
+    getAllMessagesInConversation();
+  }
+);
+
+watch(() => chatMessages.value.length,
+  async () => {
+    nextTick(() => {
+      const bubbles = document.getElementById("chat-bubbles");
+      if(bubbles != null) {
+        bubbles.scrollTop = bubbles.scrollHeight;
+      }
+    });
+  }
+);
+
+const emitInviteUser = () => {
+  emit("openInviteUserDialog", chatParticipants);
+};
+
+const emitLeave = () => {
+  emit("openLeaveDialog");
 };
 
 </script>

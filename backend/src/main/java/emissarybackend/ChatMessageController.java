@@ -1,6 +1,8 @@
 package emissarybackend;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
@@ -10,6 +12,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +37,16 @@ class ChatMessageController {
 	@GetMapping("/messages")
 	public List<ChatMessage> all() {
 		return chatRepo.findAll();
+	}
+
+	@MessageMapping("/chat/askhead/{id}")
+	@SendTo("/chat/head")
+	@Transactional
+	public Map<String, Object> head(@PathVariable("id") Long conversationId) {
+		var conversation = conversationRepo.findById(conversationId).orElseThrow(
+			() -> new RuntimeException("Could not find conversation with id " + conversationId));
+		final var head = conversation.getMessages().size();
+		return Map.of("head", head);
 	}
 
 	// client publishes to this

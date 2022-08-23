@@ -57,9 +57,7 @@ public class AuthController {
 			var user = userRepository.findByName(body.getUsername()).orElseThrow(() -> new RuntimeException("Could not find user by name"));
 			return createLoginInfoMap(token, user);
 		} catch (AuthenticationException e) {
-			log.info("Bad thing");
 			e.printStackTrace();
-			log.info("Bad thing");
 			throw new RuntimeException("Invalid login credentials");
 		}
 	}

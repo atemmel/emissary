@@ -35,9 +35,7 @@ const postNewParticipants = (participants: number[]) => {
   instance.post("/conversations/addParticipants", {
       users: participants,
       conversationId: props.currentConversationId,
-    }, {headers: {"Authorization": `Bearer ${token}`}},).then(() => {
-
-    });
+    }, {headers: {"Authorization": `Bearer ${token}`}});
 };
 
 </script>
