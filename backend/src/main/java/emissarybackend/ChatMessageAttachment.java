@@ -2,20 +2,32 @@ package emissarybackend;
 
 import java.util.Objects;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 
 @Entity
 public class ChatMessageAttachment {
 	private @Id @GeneratedValue Long id;
 
+	@Lob
+	@Column(name="bytes_column", columnDefinition="BLOB")
 	private byte[] bytes;
 	private String name;
 	private String type;
 
 	public ChatMessageAttachment() {
+	}
 
+	public ChatMessageAttachment(
+			byte[] bytes,
+			String name,
+			String type) {
+		this.bytes = bytes;
+		this.name = name;
+		this.type = type;
 	}
 
 	public ChatMessageAttachment(ChatMessageAttachment other) {

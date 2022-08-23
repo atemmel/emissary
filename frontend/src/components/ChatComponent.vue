@@ -54,7 +54,6 @@ const getAllMessagesInConversation = () => {
   instance.get("/conversations/" + props.currentConversationId,
     {headers: {"Authorization": `Bearer ${token}`},},
   ).then((response: any) => {
-    console.log(response.data);
     chatMessages.value = response.data.messages;
     chatParticipants.value = response.data.participants;
   });
@@ -117,6 +116,8 @@ const onUpload = (file: File) => {
   }
 
   const formData = new FormData();
+  formData.append("userId", props.currentUserId.toString());
+  formData.append("conversationId", props.currentConversationId.toString());
   formData.append("file", file);
   const token = store.state.jwtToken;
   instance.post("/attachments/create", formData, {
@@ -124,33 +125,11 @@ const onUpload = (file: File) => {
       "Authorization": `Bearer ${token}`,
       "Content-Type": "multipart/form-data",
     },
+  }).then(() => {
+    //console.log(response.data);
   });
 };
 
-  /*
-const onUpload = (content: ChatMessageAttachment) => {
-  if(!client.active || !props.currentConversationId) {
-    return;
-  }
-  
-
-  // old websocket attempt
-  const msg: ChatMessage = {
-    id: null,
-    author: props.currentUserId,
-    contents: "",
-    conversation: props.currentConversationId,
-    timestamp: new Date(),
-    attachment: content,
-  };
-
-  console.log("Publishing:", msg);
-  client.publish({
-    destination: "/chat/send",
-    body: JSON.stringify(msg),
-  });
-};
-  */
 </script>
 
 <template>

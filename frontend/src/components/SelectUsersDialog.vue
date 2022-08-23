@@ -3,7 +3,7 @@ import axios from "axios";
 import SelectUsersDialogItem from "./SelectUsersDialogItem.vue";
 import type {EmissaryUser} from "./../models/EmissaryUser";
 import OverlayDialog from "./OverlayDialog.vue";
-import {ref, watch, defineEmits} from "vue";
+import {ref, watch} from "vue";
 import {useStore} from "./../store";
 
 const props = defineProps<{
