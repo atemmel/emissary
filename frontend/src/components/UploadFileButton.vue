@@ -4,7 +4,11 @@ import PlusIcon from "./PlusIcon.vue";
 const emit = defineEmits(["upload"]);
 
 const fileChanged = () => {
-  const files = document.getElementById("file-input").files;
+  const element = document.getElementById("file-input");
+  if(element == null || element.value == "") {
+    return;
+  }
+  const files = element.files;
   if(files.length != 1) {
     return;
   }
@@ -15,19 +19,16 @@ const fileChanged = () => {
     return;
   }
   emit("upload", file);
+  element.value = "";
 };
 
-// 32301bytes ~32kb file became 57456 bytes ~56kb
-// 57456 / 32301 = ~1.77876 times increase
-// in other words, server should only accept files the size of 
-// 8 * 1.8 * 1024 * 1024 bytes
 </script>
 
 <template>
   <label for="file-input">
-  <div class="upload-button">
-    <PlusIcon @click="fileChanged"/>
-  </div>
+    <div class="upload-button">
+      <PlusIcon @click="fileChanged"/>
+    </div>
   </label>
   <input type="file" id="file-input" @change="fileChanged">
 </template>

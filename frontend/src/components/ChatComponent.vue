@@ -59,9 +59,9 @@ client.onConnect = () => {
 
     const delta = recvMsg.head - head.value;
     if(delta > 0) {
-      const from = -1 + -delta;
-      const to = -1;
-      getMessageSlice(from, to);
+      console.log("local head is", head.value, "global head is", recvMsg.head);
+      const from = head.value;
+      lookback(from);
     }
 
     head.value = recvMsg.head;
@@ -85,21 +85,18 @@ const getAllMessagesInConversation = () => {
   });
 };
 
-const getMessageSlice = (from: number, to: number) => {
+const lookback = (from: number) => {
   if(props.currentConversationId == null) {
     return;
   }
   const token = store.state.jwtToken;
   const url = "/conversations/" 
     + props.currentConversationId
-    + "/slice?from="
-    + from
-    + "&to="
-    + to;
+    + "/lookback?from="
+    + from;
   instance.get(url, 
     {headers: {"Authorization": `Bearer ${token}`}},
   ).then((response: any) => {
-    console.log(response.data);
     if(!response || !response.data) {
       return;
     }
@@ -163,7 +160,6 @@ const onUpload = (file: File) => {
 
 onMounted(() => {
   getAllMessagesInConversation();
-  getMessageSlice(0, 2);
 });
 
 watch(() => props.currentConversationId,

@@ -30,40 +30,14 @@ class ChatConversationController {
 		return repo.findAll();
 	}
 
-	@GetMapping("/conversations/{id}/slice")
-	public List<ChatMessage> slice(
+	@GetMapping("/conversations/{id}/lookback")
+	public List<ChatMessage> lookback(
 			@PathVariable("id") Long conversationId,
-			@RequestParam("from") int from, 
-			@RequestParam("to") int to) {
-		if(from > to && to >= 0) {
-			throw new RuntimeException("Cannot create slice from " + from + " to " + to);
-		}
+			@RequestParam("from") int from) {
 		final var conversation = repo.findById(conversationId).orElseThrow(
 			() -> new RuntimeException("Could not find conversation with id " + conversationId));
 		final var messages = conversation.getMessages();
-
-		var l = from;
-		var r = to;
-
-		// negative index wrap-around
-		if(l < 0) {
-			l += messages.size();
-		}
-		if(r < 0) {
-			r += messages.size();
-		}
-
-		final var poorSlice = l < 0 
-			|| l >= messages.size()
-			|| r < 0 
-			|| r > messages.size();
-
-		if(poorSlice) {
-			throw new RuntimeException("Cannot create slice from " + from + " to " + to);
-		}
-
-		log.info("Final slice goes from " + l + " to " + r);
-		return messages.subList(l, r);
+		return messages.subList(from, messages.size());
 	}
 
 	@GetMapping("/conversations/{id}")

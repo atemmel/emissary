@@ -8,6 +8,8 @@ defineProps<{
   visible: boolean;
 }>();
 
+const emit = defineEmits(["submit"]);
+
 const store = useStore();
 
 const instance = axios.create({
@@ -15,7 +17,7 @@ const instance = axios.create({
 });
 
 const onSubmit = (users: EmissaryUser[]) => {
-  console.log("Submitted:", users);
+  const doEmit = () => emit("submit");
   const idList = users.map((usr) => usr.id);
   if(idList.length <= 0) {
     return;
@@ -27,11 +29,8 @@ const onSubmit = (users: EmissaryUser[]) => {
       messages: [],
     }, {
     headers: {"Authorization": `Bearer ${token}`},
-  }).then(() => {
-    console.log("Good");
-  }).catch(() => {
-    console.log("Bad");
-  });
+  }).then(() => doEmit())
+  .catch(() => doEmit());
 };
 
 </script>
