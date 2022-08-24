@@ -1,6 +1,8 @@
 package emissarybackend;
 
+import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -10,18 +12,23 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 class RealtimeController {
 	private static final Logger log = LoggerFactory.getLogger(RealtimeController.class);
 
+	private final EmissaryUserRepository userRepo;
 	private final ChatMessageRepository chatRepo;
 	private final ChatConversationRepository conversationRepo;
 	private final ChatMessageAttachmentRepository attachmentRepo;
 
-	RealtimeController(ChatMessageRepository chatRepo, 
+	RealtimeController(
+			EmissaryUserRepository userRepo,
+			ChatMessageRepository chatRepo, 
 			ChatConversationRepository conversationRepo,
 			ChatMessageAttachmentRepository attachmentRepo) {
+		this.userRepo = userRepo;
 		this.chatRepo = chatRepo;
 		this.conversationRepo = conversationRepo;
 		this.attachmentRepo = attachmentRepo;
@@ -57,14 +64,43 @@ class RealtimeController {
 		return message;
 	}
 
-	@MessageMapping("/chat/askhead/{id}")
+	@MessageMapping("/chat/askhead/")
 	@SendTo("/chat/head")
 	@Transactional
-	public Map<String, Object> head(@PathVariable("id") Long conversationId) {
+	public Map<String, Object> head(
+			@RequestParam("conversationId") Long conversationId,
+			@RequestParam("userId") Long userId) {
 		final var conversation = conversationRepo.findById(conversationId).orElseThrow(
 			() -> new ChatConversationNotFoundException(conversationId));
-		final var head = conversation.getMessages().size();
-		return Map.of("head", head);
+		final var conversationHead = conversation.getMessages().size();
+		final var user = userRepo.findById(userId).orElseThrow(
+				() -> new EmissaryUserNotFoundException(userId));
+		final var friendsListHead = getFriendsListHead(user);
+		return Map.of(
+			"conversationHead", conversationHead,
+			"friendsListHead", friendsListHead);
+	}
+
+	Date getFriendsListHead(EmissaryUser user) {
+		final var conversations = user.getConversations();
+		if(conversations.isEmpty()) {
+			return new Date(0);
+		}
+		var latest = new Date(0);
+		for(final var conversation : conversations) {
+			if(conversation.getMessages().isEmpty()) {
+				latest = latest.before(conversation.getCreationTimestamp())
+					? conversation.getCreationTimestamp()
+					: latest;
+				continue;
+			}
+			
+			final var lastMessage = conversation.lastMessage();
+			latest = latest.before(lastMessage.getTimestamp())
+				? lastMessage.getTimestamp()
+				: latest;
+		}
+		return latest;
 	}
 
 }

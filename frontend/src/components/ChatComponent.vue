@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import type {ChatMessage, ChatMessageAttachment} from "./../models/ChatMessage";
+import type {ChatMessage, ChatHead} from "./../models/ChatModels";
 import ChatBubble from "./../components/ChatBubble.vue";
 import UploadFileButton from "./../components/UploadFileButton.vue";
 import {ref, onMounted, watch, nextTick} from "vue";
@@ -25,7 +25,7 @@ const message = ref<string>("");
 const chatMessages = ref<ChatMessage[]>([]);
 const chatParticipants = ref<number[]>([]);
 
-const head = ref<number|null>(null);
+const head = ref<ChatHead|null>(null);
 
 const client = new Client({
   brokerURL: "ws://localhost:8080/ws/websocket",
@@ -50,21 +50,27 @@ client.onConnect = () => {
       return;
     }
 
-    const recvMsg = JSON.parse(msg.body);
-
     if(head.value == null) {
       console.log("Ignoring head ping");
       return;
     }
 
-    const delta = recvMsg.head - head.value;
+    const newHead = JSON.parse(msg.body) as ChatHead;
+
+    // handle conversation
+    const delta = newHead.conversationHead - head.value.conversationHead;
     if(delta > 0) {
-      console.log("local head is", head.value, "global head is", recvMsg.head);
-      const from = head.value;
+      const from = head.value.conversationHead;
       lookback(from);
     }
 
-    head.value = recvMsg.head;
+    // handle friendslist
+    if(newHead.friendsListHead > head.value.friendsListHead) {
+      emit("newMessage");
+    }
+
+    // set new head
+    head.value = newHead;
   });
   setInterval(headPing, 3000);
 };

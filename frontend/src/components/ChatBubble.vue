@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {ChatMessage} from "./../models/ChatMessage";
+import type {ChatMessage} from "./../models/ChatModels";
 import {unref} from "vue";
 
 const props = defineProps<{
@@ -26,34 +26,29 @@ const src: string = attachment
     ? `data:${attachment.type};base64,${attachment.bytes}`
     : "";
 
-const transformClass = () => {
-  return {
+const transformClass = {
     'user': isUser(props.message.author),
     'stranger': !isUser(props.message.author),
-  };
 }
 
-const transformBgClass = () => {
-  return {
+const transformBgClass = {
     'user user-bg': isUser(props.message.author),
     'stranger stranger-bg': !isUser(props.message.author),
-  };
 };
 
-const fileSize = () => attachment
+const fileSize = attachment
     ? attachment.bytes.length * (3.0/4.0)
     : 0;
 
 const fileStr = () => {
-    const size = fileSize();
     const kb = 1024;
     const mb = kb * kb;
-    if(size < kb) {
-      return size + " bytes";
-    } else if(size < mb) {
-      return Math.round(size / kb) + " kb";
+    if(fileSize < kb) {
+      return fileSize + " bytes";
+    } else if(fileSize < mb) {
+      return Math.round(fileSize / kb) + " kb";
     }
-    return Math.round(size / mb) + " mb";
+    return Math.round(fileSize / mb) + " mb";
 };
 
 const download = () => {
@@ -73,23 +68,23 @@ const download = () => {
     <div>
       <!-- Regular message -->
       <div v-if="message.attachment == null" 
-        :class="transformBgClass()"
+        :class="transformBgClass"
         class="bubble">
         {{message.contents}}
       </div>
       <!-- Image -->
       <img v-else-if="isImage()"
         class="img"
-        :class="transformClass()"
+        :class="transformClass"
         :src="src" 
         :alt="message.attachment ? message.attachment.name : 'null'"
         />
       <!-- Video -->
-      <video v-else-if="isVideo()" :class="transformClass()" class="bubble" controls>
+      <video v-else-if="isVideo()" :class="transformClass" class="bubble" controls>
         <source :src="src"/>
       </video>
       <!-- Other attachment -->
-      <div v-else :class="transformBgClass()" class="bubble">
+      <div v-else :class="transformBgClass" class="bubble">
         <div class="file" @click="download">
           <div>
             {{message.attachment.name}}

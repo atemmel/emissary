@@ -12,3 +12,8 @@ export interface ChatMessageAttachment {
 	type: string;
 	bytes: string;
 }
+
+export interface ChatHead {
+	conversationHead: number;
+	friendsListHead: Date;
+}
