@@ -1,8 +1,8 @@
 package emissarybackend;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -81,6 +81,20 @@ class RealtimeController {
 			"friendsListHead", friendsListHead);
 	}
 
+	@MessageMapping("/chat/askheads/{id}")
+	@SendTo("/chat/heads")
+	@Transactional
+	public Map<String, Object> heads(
+			@PathVariable("userId") Long userId) {
+		final var user = userRepo.findById(userId).orElseThrow(
+				() -> new EmissaryUserNotFoundException(userId));
+		final var conversationHeads = getConversationHeads(user);
+		final var friendsListHead = getFriendsListHead(user);
+		return Map.of(
+			"conversationHeads", conversationHeads,
+			"friendsListHead", friendsListHead);
+	}
+
 	Date getFriendsListHead(EmissaryUser user) {
 		final var conversations = user.getConversations();
 		if(conversations.isEmpty()) {
@@ -99,6 +113,20 @@ class RealtimeController {
 			latest = latest.before(lastMessage.getTimestamp())
 				? lastMessage.getTimestamp()
 				: latest;
+		}
+		return latest;
+	}
+
+	Map<Long, Integer> getConversationHeads(EmissaryUser user) {
+		final var conversations = user.getConversations();
+		if(conversations.isEmpty()) {
+			return Map.of();
+		}
+		var latest = new HashMap<Long, Integer>(conversations.size());
+		for(final var conversation: conversations) {
+			final var id = conversation.getId();
+			final var head = conversation.getMessages().size();
+			latest.put(id, head);
 		}
 		return latest;
 	}

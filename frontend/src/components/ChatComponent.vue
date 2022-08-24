@@ -62,7 +62,7 @@ client.onConnect = () => {
     const delta = newHead.conversationHead - head.value.conversationHead;
     if(delta > 0) {
       const from = head.value.conversationHead;
-      lookback(from);
+      catchup(from);
     }
 
     // handle friendslist
@@ -92,14 +92,14 @@ const getAllMessagesInConversation = () => {
   });
 };
 
-const lookback = (from: number) => {
+const catchup = (from: number) => {
   if(props.currentConversationId == null) {
     return;
   }
   const token = store.state.jwtToken;
   const url = "/conversations/" 
     + props.currentConversationId
-    + "/lookback?from="
+    + "/catchup?from="
     + from;
   instance.get(url, 
     {headers: {"Authorization": `Bearer ${token}`}},

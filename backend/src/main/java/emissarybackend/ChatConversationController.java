@@ -30,14 +30,27 @@ class ChatConversationController {
 		return repo.findAll();
 	}
 
-	@GetMapping("/conversations/{id}/lookback")
-	public List<ChatMessage> lookback(
+	@GetMapping("/conversations/{id}/catchup")
+	public List<ChatMessage> catchup(
 			@PathVariable("id") Long conversationId,
 			@RequestParam("from") int from) {
 		final var conversation = repo.findById(conversationId).orElseThrow(
 			() -> new ChatConversationNotFoundException(conversationId));
 		final var messages = conversation.getMessages();
 		return messages.subList(from, messages.size());
+	}
+
+	@GetMapping("/conversations/{id}/head")
+	public List<ChatMessage> head(
+			@PathVariable("id") Long conversationId,
+			@RequestParam("count") int count) {
+		final var conversation = repo.findById(conversationId).orElseThrow(
+			() -> new ChatConversationNotFoundException(conversationId));
+		final var messages = conversation.getMessages();
+		final var begin = count - messages.size() < 0 
+			? 0
+			: count;
+		return messages.subList(begin, messages.size());
 	}
 
 	@GetMapping("/conversations/{id}")
