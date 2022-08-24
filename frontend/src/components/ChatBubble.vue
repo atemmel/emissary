@@ -1,29 +1,27 @@
 <script setup lang="ts">
 import type {ChatMessage} from "./../models/ChatModels";
-import {unref} from "vue";
+import {onMounted} from "vue";
 
 const props = defineProps<{
   message: ChatMessage;
   currentUserId: number;
 }>();
 
-const attachment = unref(props.message.attachment);
-
 const isUser = (id: number) => props.currentUserId === id;
 
-const isImage = () => attachment 
-    && attachment.bytes
-    && attachment.type.startsWith("image/");
+const isImage = () => props.message.attachment
+    && props.message.attachment.bytes
+    && props.message.attachment.type.startsWith("image/");
 
-const isPlaintext = () => attachment
-    && attachment.bytes;
+const isPlaintext = () => props.message.attachment
+    && props.message.attachment.bytes;
 
-const isVideo = () => attachment
-    && attachment.bytes
-    && attachment.type.startsWith("video/");
+const isVideo = () => props.message.attachment
+    && props.message.attachment.bytes
+    && props.message.attachment.type.startsWith("video/");
 
-const src: string = attachment
-    ? `data:${attachment.type};base64,${attachment.bytes}`
+const src = () => props.message.attachment
+    ? `data:${props.message.attachment.type};base64,${props.message.attachment.bytes}`
     : "";
 
 const transformClass = {
@@ -36,28 +34,29 @@ const transformBgClass = {
     'stranger stranger-bg': !isUser(props.message.author),
 };
 
-const fileSize = attachment
-    ? attachment.bytes.length * (3.0/4.0)
+const fileSize = () => props.message.attachment
+    ? props.message.attachment.bytes.length * (3.0/4.0)
     : 0;
 
 const fileStr = () => {
     const kb = 1024;
     const mb = kb * kb;
-    if(fileSize < kb) {
-      return fileSize + " bytes";
-    } else if(fileSize < mb) {
-      return Math.round(fileSize / kb) + " kb";
+    const size = fileSize();
+    if(size < kb) {
+      return size + " bytes";
+    } else if(size < mb) {
+      return Math.round(size / kb) + " kb";
     }
-    return Math.round(fileSize / mb) + " mb";
+    return Math.round(size / mb) + " mb";
 };
 
 const download = () => {
-  if(attachment == null) {
+  if(props.message.attachment== null) {
     return;
   }
   const a = document.createElement("a"); //Create <a>
-  a.href = `data:${attachment.type};base64,${attachment.bytes}`; //Image Base64 Goes here
-  a.download = attachment.name; //File name Here
+  a.href = src();
+  a.download = props.message.attachment.name; //File name Here
   a.click(); //Downloaded file
 };
 
@@ -76,12 +75,12 @@ const download = () => {
       <img v-else-if="isImage()"
         class="img"
         :class="transformClass"
-        :src="src" 
+        :src="src()" 
         :alt="message.attachment ? message.attachment.name : 'null'"
         />
       <!-- Video -->
       <video v-else-if="isVideo()" :class="transformClass" class="bubble" controls>
-        <source :src="src"/>
+        <source :src="src()"/>
       </video>
       <!-- Other attachment -->
       <div v-else :class="transformBgClass" class="bubble">
