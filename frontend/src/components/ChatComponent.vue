@@ -5,6 +5,7 @@ import ChatBubble from "./../components/ChatBubble.vue";
 import UploadFileButton from "./../components/UploadFileButton.vue";
 import {ref, onMounted, watch, nextTick} from "vue";
 import {Client} from "@stomp/stompjs";
+import type {Message} from "@stomp/stompjs";
 import {useStore} from "./../store";
 
 const store = useStore();
@@ -36,7 +37,7 @@ const client = new Client({
 
 client.onConnect = () => {
   console.log("Client is connected");
-  client.subscribe("/chat", (msg: any) => {
+  client.subscribe("/chat", (msg: Message) => {
     if(!msg.body) {
       return;
     }
@@ -44,7 +45,7 @@ client.onConnect = () => {
     chatMessages.value.push(recvMsg);
     emit("newMessage");
   });
-  client.subscribe("/chat/head", (msg: any) => {
+  client.subscribe("/chat/head", (msg: Message) => {
     if(msg.body == null) {
       console.log("Head ping failed on arrival");
       return;
