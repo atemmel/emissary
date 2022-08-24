@@ -1,11 +1,9 @@
 package emissarybackend;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,19 +36,11 @@ public class FriendsListItemService {
 			}
 		}
 		return friendName;
-		/*
-		for(int i = 0; i < participants.size(); i++) {
-			lastAuthor += participants.get(i).getName();
-			if(i + 1 < participants.size()) {
-				lastAuthor += ", ";
-			}
-		}
-		*/
 	}
 
 	List<FriendsListItem> createFriendsListItemsByUserId(Long userId) {
 		final EmissaryUser user = userRepository.findById(userId).orElseThrow(
-			() -> new RuntimeException("Could not find user with id " + userId));
+			() -> new UserNotFoundException(userId));
 		List<FriendsListItem> items = new ArrayList<>();
 		log.info("Total conversations " + user.getConversations().size());
 		var it = user.getConversations().iterator();

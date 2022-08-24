@@ -43,8 +43,7 @@ class ChatMessageAttachmentController {
 	@GetMapping("/attachments/{id}")
 	public ChatMessageAttachment one(@PathVariable Long id) {
 		return attachmentRepo.findById(id).orElseThrow(
-			() -> new RuntimeException("Could not find attachment with id " + id)
-		);
+			() -> new AttachmentNotFoundException(id));
 	}
 
 	@RequestMapping(value="/attachments/create",
@@ -69,9 +68,9 @@ class ChatMessageAttachmentController {
 
 		var message = new ChatMessage();
 		message.setAuthor(userRepo.findById(userId).orElseThrow(
-			() -> new RuntimeException("Could not find user with id " + userId)));
+			() -> new UserNotFoundException(userId)));
 		var conv = conversationRepo.findById(conversationId).orElseThrow(
-			() -> new RuntimeException("Could not find conversation with id " + conversationId));
+			() -> new ConversationNotFoundException(conversationId));
 
 		try {
 			var attachment = new ChatMessageAttachment(
@@ -87,16 +86,4 @@ class ChatMessageAttachmentController {
 		}
 		return null;
 	}
-	/*
-	public void create(@RequestBody MultiValueMap<String, String> formData) {
-		final var keys = formData.keySet();
-		var it = keys.iterator();
-		while(it.hasNext()) {
-			var key = it.next();
-			var value = formData.get(key);
-			log.info("Found key: " + key + " value: " + value.toString());
-		}
-	}
-	*/
-
 }

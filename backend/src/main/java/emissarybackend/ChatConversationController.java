@@ -35,7 +35,7 @@ class ChatConversationController {
 			@PathVariable("id") Long conversationId,
 			@RequestParam("from") int from) {
 		final var conversation = repo.findById(conversationId).orElseThrow(
-			() -> new RuntimeException("Could not find conversation with id " + conversationId));
+			() -> new ConversationNotFoundException(conversationId));
 		final var messages = conversation.getMessages();
 		return messages.subList(from, messages.size());
 	}
@@ -43,8 +43,7 @@ class ChatConversationController {
 	@GetMapping("/conversations/{id}")
 	public ChatConversation one(@PathVariable Long id) {
 		return repo.findById(id).orElseThrow(
-			() -> new RuntimeException("Could not find conversation with id " + id)
-		);
+			() -> new ConversationNotFoundException(id));
 	}
 
 	@PostMapping("/conversations/create")
@@ -58,9 +57,10 @@ class ChatConversationController {
 	@PostMapping("/conversations/addParticipants")
 	public void addParticipants(@RequestBody ConversationUsersDelta delta) {
 		log.info("Adding " + delta.users.size() + " users to a conversation");
-		var conversation = repo.findById(delta.getConversationId()).orElseThrow(() -> new RuntimeException("Could not find conversation with id " + delta.conversationId));
+		final var conversationId = delta.getConversationId();
+		var conversation = repo.findById(conversationId).orElseThrow(() -> new ConversationNotFoundException(conversationId));
 		for (var userId : delta.getUsers()) {
-			var user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("Could not find user with id " + userId));
+			var user = userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 			conversation.addParticipant(user);
 		}
 		repo.save(conversation);
@@ -69,9 +69,10 @@ class ChatConversationController {
 	@PostMapping("/conversations/removeParticipants")
 	public void removeParticipants(@RequestBody ConversationUsersDelta delta) {
 		log.info("Removing " + delta.users.size() + " users from a conversation");
-		var conversation = repo.findById(delta.getConversationId()).orElseThrow(() -> new RuntimeException("Could not find conversation with id " + delta.conversationId));
+		final var conversationId = delta.getConversationId();
+		var conversation = repo.findById(conversationId).orElseThrow(() -> new ConversationNotFoundException(conversationId));
 		for(var userId : delta.getUsers()) {
-			var user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("Could not find user with id " + userId));
+			var user = userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 			conversation.removeParticipant(user);
 		}
 		repo.save(conversation);
