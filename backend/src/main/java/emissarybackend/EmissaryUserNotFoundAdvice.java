@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
-class AttachmentNotFoundAdvice {
+class EmissaryUserNotFoundAdvice {
 	@ExceptionHandler
 	@ResponseBody
 	@ResponseStatus(HttpStatus.NOT_FOUND)
-	String handler(AttachmentNotFoundException except) {
+	String handler(EmissaryUserNotFoundException except) {
 		return except.getMessage();
 	}
 }

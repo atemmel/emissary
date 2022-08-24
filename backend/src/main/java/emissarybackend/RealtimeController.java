@@ -50,7 +50,8 @@ class RealtimeController {
 
 		message = chatRepo.save(message);
 		final var convId = message.getConversation().getId();
-		final var conv = conversationRepo.findById(convId).orElseThrow(() -> new ConversationNotFoundException(convId));
+		final var conv = conversationRepo.findById(convId).orElseThrow(
+				() -> new ChatConversationNotFoundException(convId));
 		conv.addMessage(message);
 		log.info("Saved new message");
 		return message;
@@ -61,7 +62,7 @@ class RealtimeController {
 	@Transactional
 	public Map<String, Object> head(@PathVariable("id") Long conversationId) {
 		final var conversation = conversationRepo.findById(conversationId).orElseThrow(
-			() -> new ConversationNotFoundException(conversationId));
+			() -> new ChatConversationNotFoundException(conversationId));
 		final var head = conversation.getMessages().size();
 		return Map.of("head", head);
 	}

@@ -40,7 +40,7 @@ public class FriendsListItemService {
 
 	List<FriendsListItem> createFriendsListItemsByUserId(Long userId) {
 		final EmissaryUser user = userRepository.findById(userId).orElseThrow(
-			() -> new UserNotFoundException(userId));
+			() -> new EmissaryUserNotFoundException(userId));
 		List<FriendsListItem> items = new ArrayList<>();
 		log.info("Total conversations " + user.getConversations().size());
 		var it = user.getConversations().iterator();

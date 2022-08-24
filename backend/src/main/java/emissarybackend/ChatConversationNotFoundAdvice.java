@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
-class ConversationNotFoundAdvice {
+class ChatConversationNotFoundAdvice {
 	@ExceptionHandler
 	@ResponseBody
 	@ResponseStatus(HttpStatus.NOT_FOUND)
-	String handler(ConversationNotFoundException except) {
+	String handler(ChatConversationNotFoundException except) {
 		return except.getMessage();
 	}
 }

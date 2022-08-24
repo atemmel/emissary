@@ -43,7 +43,7 @@ class ChatMessageAttachmentController {
 	@GetMapping("/attachments/{id}")
 	public ChatMessageAttachment one(@PathVariable Long id) {
 		return attachmentRepo.findById(id).orElseThrow(
-			() -> new AttachmentNotFoundException(id));
+			() -> new ChatMessageAttachmentNotFoundException(id));
 	}
 
 	@RequestMapping(value="/attachments/create",
@@ -68,9 +68,9 @@ class ChatMessageAttachmentController {
 
 		var message = new ChatMessage();
 		message.setAuthor(userRepo.findById(userId).orElseThrow(
-			() -> new UserNotFoundException(userId)));
+			() -> new EmissaryUserNotFoundException(userId)));
 		var conv = conversationRepo.findById(conversationId).orElseThrow(
-			() -> new ConversationNotFoundException(conversationId));
+			() -> new ChatConversationNotFoundException(conversationId));
 
 		try {
 			var attachment = new ChatMessageAttachment(

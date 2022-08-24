@@ -24,6 +24,6 @@ class EmissaryUserController {
 	@GetMapping("/users/{id}")
 	EmissaryUser one(@PathVariable Long id) {
 		return repo.findById(id).orElseThrow(
-			() -> new UserNotFoundException(id));
+			() -> new EmissaryUserNotFoundException(id));
 	}
 }
