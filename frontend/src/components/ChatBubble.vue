@@ -23,7 +23,7 @@ const isVideo = () => attachment
     && attachment.type.startsWith("video/");
 
 const src: string = attachment
-    ? `data:${attachment?.type};base64,${attachment?.bytes}`
+    ? `data:${attachment.type};base64,${attachment.bytes}`
     : "";
 
 const transformClass = () => {
@@ -51,9 +51,9 @@ const fileStr = () => {
     if(size < kb) {
       return size + " bytes";
     } else if(size < mb) {
-      return size + " kb";
+      return Math.round(size / kb) + " kb";
     }
-    return size + " mb";
+    return Math.round(size / mb) + " mb";
 };
 
 const download = () => {
@@ -84,6 +84,10 @@ const download = () => {
         :src="src" 
         :alt="message.attachment ? message.attachment.name : 'null'"
         />
+      <!-- Video -->
+      <video v-else-if="isVideo()" :class="transformClass()" class="bubble" controls>
+        <source :src="src"/>
+      </video>
       <!-- Other attachment -->
       <div v-else :class="transformBgClass()" class="bubble">
         <div class="file" @click="download">
