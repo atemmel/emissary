@@ -83,12 +83,18 @@ const getAllMessagesInConversation = () => {
     return;
   }
   const token = store.state.jwtToken;
-  instance.get("/conversations/" + props.currentConversationId,
+  instance.get("/conversations/" 
+    + props.currentConversationId 
+    + "/init/"
+    + "?count=20",
     {headers: {"Authorization": `Bearer ${token}`},},
   ).then((response: any) => {
     chatMessages.value = response.data.messages;
     chatParticipants.value = response.data.participants;
-    head.value = response.data.messages.length;
+    head.value = {
+      friendsListHead: new Date(),
+      conversationHead: response.data.messages.length,
+    } as ChatHead;
   });
 };
 
@@ -165,6 +171,17 @@ const onUpload = (file: File) => {
   headPing();
 };
 
+const onScroll = () => {
+    const bubbles = document.getElementById("chat-bubbles");
+    if(bubbles == null) {
+      return;
+    }
+
+    if(bubbles.scrollTop == 0) {
+      console.log("Scrolling scrolling scrolling");
+    }
+};
+
 onMounted(() => {
   getAllMessagesInConversation();
 });
@@ -191,6 +208,7 @@ const emitInviteUser = () => {
 };
 
 const emitLeave = () => {
+
   emit("openLeaveDialog");
 };
 
@@ -206,7 +224,7 @@ const emitLeave = () => {
           <span class="evil">Leave Chat</span>
       </div>
     </div>
-    <div id="chat-bubbles">
+    <div id="chat-bubbles" @scroll="onScroll">
       <ChatBubble 
         v-for="(message, idx) in chatMessages" 
         :key="idx" 

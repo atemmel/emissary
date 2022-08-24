@@ -74,7 +74,7 @@ class RealtimeController {
 			() -> new ChatConversationNotFoundException(conversationId));
 		final var conversationHead = conversation.getMessages().size();
 		final var user = userRepo.findById(userId).orElseThrow(
-				() -> new EmissaryUserNotFoundException(userId));
+			() -> new EmissaryUserNotFoundException(userId));
 		final var friendsListHead = getFriendsListHead(user);
 		return Map.of(
 			"conversationHead", conversationHead,
@@ -130,5 +130,4 @@ class RealtimeController {
 		}
 		return latest;
 	}
-
 }

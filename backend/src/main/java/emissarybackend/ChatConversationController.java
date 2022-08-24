@@ -47,10 +47,23 @@ class ChatConversationController {
 		final var conversation = repo.findById(conversationId).orElseThrow(
 			() -> new ChatConversationNotFoundException(conversationId));
 		final var messages = conversation.getMessages();
-		final var begin = count - messages.size() < 0 
-			? 0
-			: count;
+		final var begin = messages.size() - (messages.size() - count < 0 
+			? messages.size()
+			: count);
+		log.info("Sending " + begin + " to " + messages.size());
 		return messages.subList(begin, messages.size());
+	}
+
+	@GetMapping("/conversations/{conversationId}/init")
+	public ChatConversation init(
+			@PathVariable Long conversationId,
+			@RequestParam("count") int count) {
+		final var conversation = repo.findById(conversationId).orElseThrow(
+			() -> new ChatConversationNotFoundException(conversationId));
+		final var messages = head(conversationId, count);
+		final var result = new ChatConversation(conversation);
+		result.setMessages(messages);
+		return result;
 	}
 
 	@GetMapping("/conversations/{id}")

@@ -5,3 +5,8 @@ export interface FriendsListItem {
 	prevAuthor: string;
 	timestamp: Date;
 }
+
+export interface ConversationHead {
+	lastFetch: Date;
+	head: Date;
+}
