@@ -86,7 +86,7 @@ const getAllMessagesInConversation = () => {
   instance.get("/conversations/" 
     + props.currentConversationId 
     + "/init/"
-    + "?count=20",
+    + "?count=10",
     {headers: {"Authorization": `Bearer ${token}`},},
   ).then((response: any) => {
     chatMessages.value = response.data.messages;
@@ -95,6 +95,12 @@ const getAllMessagesInConversation = () => {
       friendsListHead: new Date(),
       conversationHead: response.data.messages.length,
     } as ChatHead;
+    nextTick(() => {nextTick(() => {
+      const bubbles = document.getElementById("chat-bubbles");
+      if(bubbles != null) {
+        bubbles.scrollTop = bubbles.scrollHeight;
+      }
+    })});
   });
 };
 
@@ -192,7 +198,11 @@ watch(() => props.currentConversationId,
   }
 );
 
-watch(() => chatMessages.value.length,
+const getRecentDate = () => chatMessages.value.length == 0
+  ? new Date(0)
+  : chatMessages.value[chatMessages.value.length - 1].timestamp;
+
+watch(getRecentDate,
   async () => {
     nextTick(() => {
       const bubbles = document.getElementById("chat-bubbles");
@@ -224,7 +234,7 @@ const emitLeave = () => {
           <span class="evil">Leave Chat</span>
       </div>
     </div>
-    <div id="chat-bubbles" @scroll="onScroll">
+    <div id="chat-bubbles" @wheel="onScroll">
       <ChatBubble 
         v-for="(message, idx) in chatMessages" 
         :key="idx" 

@@ -79,7 +79,7 @@ const download = () => {
         :alt="message.attachment ? message.attachment.name : 'null'"
         />
       <!-- Video -->
-      <video v-else-if="isVideo()" :class="transformClass" class="bubble" controls>
+      <video v-else-if="isVideo()" :class="transformClass" class="video bubble" controls>
         <source :src="src()"/>
       </video>
       <!-- Other attachment -->
@@ -131,6 +131,12 @@ const download = () => {
 .img {
   border-radius: 16px;
   max-width: 100%;
+  max-height: 200px;
+}
+
+.video {
+  max-width: 100%;
+  max-height: 200px;
 }
 
 .file:hover {
