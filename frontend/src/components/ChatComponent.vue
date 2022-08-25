@@ -95,13 +95,14 @@ const getAllMessagesInConversation = () => {
       friendsListHead: new Date(),
       conversationHead: response.data.messages.length,
     } as ChatHead;
-    nextTick(() => {nextTick(() => {
-      const bubbles = document.getElementById("chat-bubbles");
-      if(bubbles != null) {
-        bubbles.scrollTop = bubbles.scrollHeight;
-      }
-    })});
   });
+};
+
+const scrollToBottom = () => {
+    const bubbles = document.getElementById("chat-bubbles");
+    if(bubbles != null) {
+      bubbles.scrollTop = bubbles.scrollHeight;
+    }
 };
 
 const catchup = (from: number) => {
@@ -183,9 +184,11 @@ const onScroll = () => {
       return;
     }
 
-    if(bubbles.scrollTop == 0) {
-      console.log("Scrolling scrolling scrolling");
+    if(bubbles.scrollTop != 0) {
+      return;
     }
+
+    console.log("Scrolling scrolling scrolling");
 };
 
 onMounted(() => {
@@ -203,14 +206,7 @@ const getRecentDate = () => chatMessages.value.length == 0
   : chatMessages.value[chatMessages.value.length - 1].timestamp;
 
 watch(getRecentDate,
-  async () => {
-    nextTick(() => {
-      const bubbles = document.getElementById("chat-bubbles");
-      if(bubbles != null) {
-        bubbles.scrollTop = bubbles.scrollHeight;
-      }
-    });
-  }
+  async () => nextTick(scrollToBottom),
 );
 
 const emitInviteUser = () => {
