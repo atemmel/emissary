@@ -13,7 +13,11 @@ export interface ChatMessageAttachment {
 	bytes: string;
 }
 
+export interface ConversationHeads {
+	[key: number]: number
+}
+
 export interface ChatHead {
-	conversationHead: number;
+	conversationHeads: ConversationHeads
 	friendsListHead: Date;
 }

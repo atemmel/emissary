@@ -49,6 +49,9 @@ client.onConnect = () => {
     emit("newMessage");
   });
   client.subscribe("/chat/head", (msg: Message) => {
+    if(props.currentConversationId == null) {
+      return;
+    }
     if(msg.body == null) {
       console.log("Head ping failed on arrival");
       return;
@@ -62,19 +65,19 @@ client.onConnect = () => {
     const newHead = JSON.parse(msg.body) as ChatHead;
 
     // handle conversation
-    const delta = newHead.conversationHead - head.value.conversationHead;
+    const newConversationHead = newHead.conversationHeads[props.currentConversationId];
+    const oldConversationHead = head.value.conversationHeads[props.currentConversationId];
+    const delta = newConversationHead - oldConversationHead;
     if(delta > 0) {
-      const from = head.value.conversationHead;
+      const from = oldConversationHead;
       catchup(from);
     }
 
-    // handle friendslist
     if(newHead.friendsListHead > head.value.friendsListHead) {
       emit("newMessage");
     }
 
-    // set new head
-    head.value = newHead;
+    head.value.conversationHeads[props.currentConversationId] = newConversationHead;
   });
   setInterval(headPing, 3000);
 };
@@ -95,12 +98,16 @@ const initConversation = () => {
     + firstHead,
     {headers: {"Authorization": `Bearer ${token}`},},
   ).then((response: any) => {
+    if(props.currentConversationId == null) {
+      return;
+    }
     chatMessages.value = response.data.messages;
     chatParticipants.value = response.data.participants;
     head.value = {
       friendsListHead: new Date(),
-      conversationHead: response.data.messages.length,
+      conversationHeads: {}
     } as ChatHead;
+    head.value.conversationHeads[props.currentConversationId] = response.data.messages.length;
     isPageinating.value = false;
   });
 };
@@ -113,12 +120,12 @@ const scrollToBottom = () => {
 };
 
 const pageinate = () => {
-  if(head.value == null || isPageinating.value || pageinationEnd.value) {
+  if(head.value == null || isPageinating.value || pageinationEnd.value ||props.currentConversationId == null) {
     return;
   }
   isPageinating.value = true;
   const delta = 10;
-  const thisPage = head.value.conversationHead;
+  const thisPage = head.value.conversationHeads[props.currentConversationId];
   const nextPage = thisPage + delta;
 
   const token = store.state.jwtToken;
@@ -130,13 +137,13 @@ const pageinate = () => {
     + nextPage,
     {headers: {"Authorization": `Bearer ${token}`}})
   .then((response: any) => {
-    if(head.value == null) {
+    if(head.value == null ||props.currentConversationId == null) {
       return;
     }
     const prefix = response.data as ChatMessage[];
     const suffix = chatMessages.value;
     chatMessages.value = prefix.concat(suffix);
-    head.value.conversationHead += prefix.length;
+    head.value.conversationHeads[props.currentConversationId] += prefix.length;
     pageinationEnd.value = prefix.length < delta;
     isPageinating.value = false;
   });
