@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type {ChatMessage} from "./../models/ChatModels";
-import {onMounted} from "vue";
 
 const props = defineProps<{
   message: ChatMessage;
@@ -12,9 +11,6 @@ const isUser = (id: number) => props.currentUserId === id;
 const isImage = () => props.message.attachment
     && props.message.attachment.bytes
     && props.message.attachment.type.startsWith("image/");
-
-const isPlaintext = () => props.message.attachment
-    && props.message.attachment.bytes;
 
 const isVideo = () => props.message.attachment
     && props.message.attachment.bytes
@@ -59,7 +55,6 @@ const download = () => {
   a.download = props.message.attachment.name; //File name Here
   a.click(); //Downloaded file
 };
-
 </script>
 
 <template>
@@ -110,6 +105,7 @@ const download = () => {
   border-radius: 16px;
   max-width: 60%;
   font-size: 1.1em;
+  transition: 1.2s;
 }
 
 .user {

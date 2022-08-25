@@ -21,3 +21,12 @@ export interface ChatHead {
 	conversationHeads: ConversationHeads
 	friendsListHead: Date;
 }
+
+export interface ChatCache {
+	messages: ChatMessage[];
+	timestamp: Date;
+}
+
+export interface ChatCaches {
+	[key: number]: ChatCache;
+}

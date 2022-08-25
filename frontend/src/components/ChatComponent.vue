@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import type {ChatMessage, ChatHead} from "./../models/ChatModels";
+import type {ChatMessage, ChatHead, ChatCaches, ChatCache} from "./../models/ChatModels";
 import ChatBubble from "./../components/ChatBubble.vue";
 import UploadFileButton from "./../components/UploadFileButton.vue";
 import {ref, onMounted, watch, nextTick} from "vue";
@@ -23,6 +23,7 @@ const instance = axios.create({
 
 const message = ref<string>("");
 
+const chatCaches = ref<ChatCaches>({});
 const chatMessages = ref<ChatMessage[]>([]);
 const chatParticipants = ref<number[]>([]);
 
@@ -44,8 +45,10 @@ client.onConnect = () => {
     if(!msg.body) {
       return;
     }
-    const recvMsg = JSON.parse(msg.body);
-    chatMessages.value.push(recvMsg);
+    const recvMsg = JSON.parse(msg.body) as ChatMessage;
+    if(recvMsg.conversation == props.currentConversationId) {
+      chatMessages.value.push(recvMsg);
+    }
     emit("newMessage");
   });
   client.subscribe("/chat/head", (msg: Message) => {
@@ -88,6 +91,7 @@ const initConversation = () => {
   if(props.currentConversationId == null) {
     return;
   }
+  console.log("Init conversation");
   isPageinating.value = true;
   pageinationEnd.value = false;
   const firstHead = 20;
@@ -103,6 +107,7 @@ const initConversation = () => {
     }
     chatMessages.value = response.data.messages;
     chatParticipants.value = response.data.participants;
+    saveCache(props.currentConversationId);
     head.value = {
       friendsListHead: new Date(),
       conversationHeads: {}
@@ -243,9 +248,32 @@ onMounted(() => {
   initConversation();
 });
 
+const saveCache = (id: number) => {
+  chatCaches.value[id] = {
+    messages: chatMessages.value,
+    timestamp: new Date(),
+  } as ChatCache;
+};
+
+const loadCache = (id: number) => {
+  chatMessages.value = chatCaches.value[id].messages
+  chatCaches.value[id].timestamp = new Date();
+};
+
 watch(() => props.currentConversationId,
   async () => {
-    initConversation();
+    if(props.currentConversationId == null || head.value == null) {
+      return;
+    }
+    // cache check
+    const cached = props.currentConversationId in chatCaches.value;
+    if(cached) {
+      // load cache instead
+      loadCache(props.currentConversationId);
+      headPing();
+    } else {
+      initConversation();
+    }
   }
 );
 
@@ -262,7 +290,6 @@ const emitInviteUser = () => {
 };
 
 const emitLeave = () => {
-
   emit("openLeaveDialog");
 };
 
