@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Controller
 @RequestMapping("/api")
 class ChatMessageAttachmentController {
-	private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
+	private static final Logger log = LoggerFactory.getLogger(ChatMessageAttachmentController.class);
 
 	private final ChatMessageRepository chatRepo;
 	private final ChatConversationRepository conversationRepo;

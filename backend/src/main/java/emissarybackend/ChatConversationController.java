@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 class ChatConversationController {
-	private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
+	private static final Logger log = LoggerFactory.getLogger(ChatConversation.class);
 	private final ChatConversationRepository repo;
 	private final EmissaryUserRepository userRepo;
 
@@ -54,9 +54,25 @@ class ChatConversationController {
 		return messages.subList(begin, messages.size());
 	}
 
-	@GetMapping("/conversations/{conversationId}/init")
+	@GetMapping("/conversations/{id}/history")
+	public List<ChatMessage> history(
+			@PathVariable("id") Long conversationId,
+			@RequestParam("from") int from,
+			@RequestParam("to") int count) {
+		final var conversation = repo.findById(conversationId).orElseThrow(
+			() -> new ChatConversationNotFoundException(conversationId));
+		final var messages = conversation.getMessages();
+		final var end = messages.size() - from;
+		if(end <= 0) {
+			return List.of();
+		}
+		final var begin = end - count;
+		return messages.subList(begin < 0 ? 0 : begin, end);
+	}
+
+	@GetMapping("/conversations/{id}/init")
 	public ChatConversation init(
-			@PathVariable Long conversationId,
+			@PathVariable("id") Long conversationId,
 			@RequestParam("count") int count) {
 		final var conversation = repo.findById(conversationId).orElseThrow(
 			() -> new ChatConversationNotFoundException(conversationId));

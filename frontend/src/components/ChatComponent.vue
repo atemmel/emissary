@@ -28,6 +28,9 @@ const chatParticipants = ref<number[]>([]);
 
 const head = ref<ChatHead|null>(null);
 
+const isPageinating = ref<boolean>(true);
+const pageinationEnd = ref<boolean>(false);
+
 const client = new Client({
   brokerURL: "ws://localhost:8080/ws/websocket",
   reconnectDelay: 5000,
@@ -78,15 +81,18 @@ client.onConnect = () => {
 
 client.activate();
 
-const getAllMessagesInConversation = () => {
+const initConversation = () => {
   if(props.currentConversationId == null) {
     return;
   }
+  isPageinating.value = true;
+  pageinationEnd.value = false;
+  const firstHead = 20;
   const token = store.state.jwtToken;
   instance.get("/conversations/" 
     + props.currentConversationId 
-    + "/init/"
-    + "?count=10",
+    + "/init/?count="
+    + firstHead,
     {headers: {"Authorization": `Bearer ${token}`},},
   ).then((response: any) => {
     chatMessages.value = response.data.messages;
@@ -95,6 +101,7 @@ const getAllMessagesInConversation = () => {
       friendsListHead: new Date(),
       conversationHead: response.data.messages.length,
     } as ChatHead;
+    isPageinating.value = false;
   });
 };
 
@@ -103,6 +110,36 @@ const scrollToBottom = () => {
     if(bubbles != null) {
       bubbles.scrollTop = bubbles.scrollHeight;
     }
+};
+
+const pageinate = () => {
+  if(head.value == null || isPageinating.value || pageinationEnd.value) {
+    return;
+  }
+  isPageinating.value = true;
+  const delta = 10;
+  const thisPage = head.value.conversationHead;
+  const nextPage = thisPage + delta;
+
+  const token = store.state.jwtToken;
+  instance.get("/conversations/"
+    + props.currentConversationId
+    + "/history/?from="
+    + thisPage
+    + "&to="
+    + nextPage,
+    {headers: {"Authorization": `Bearer ${token}`}})
+  .then((response: any) => {
+    if(head.value == null) {
+      return;
+    }
+    const prefix = response.data as ChatMessage[];
+    const suffix = chatMessages.value;
+    chatMessages.value = prefix.concat(suffix);
+    head.value.conversationHead += prefix.length;
+    pageinationEnd.value = prefix.length < delta;
+    isPageinating.value = false;
+  });
 };
 
 const catchup = (from: number) => {
@@ -178,26 +215,30 @@ const onUpload = (file: File) => {
   headPing();
 };
 
+const prevScrollY = ref<number>(1);
+
 const onScroll = () => {
     const bubbles = document.getElementById("chat-bubbles");
     if(bubbles == null) {
       return;
     }
 
-    if(bubbles.scrollTop != 0) {
+    const scrollingUp = bubbles.scrollTop - prevScrollY.value <= 0;
+    prevScrollY.value = bubbles.scrollTop;
+    if(bubbles.scrollTop != 0 || !scrollingUp) {
       return;
     }
 
-    console.log("Scrolling scrolling scrolling");
+    pageinate();
 };
 
 onMounted(() => {
-  getAllMessagesInConversation();
+  initConversation();
 });
 
 watch(() => props.currentConversationId,
   async () => {
-    getAllMessagesInConversation();
+    initConversation();
   }
 );
 

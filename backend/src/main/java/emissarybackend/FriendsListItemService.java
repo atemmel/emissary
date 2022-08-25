@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 @Service("FriendsListItemService")
 public class FriendsListItemService {
-	private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
+	private static final Logger log = LoggerFactory.getLogger(FriendsListItemService.class);
 
 	@Autowired
 	EmissaryUserRepository userRepository;
