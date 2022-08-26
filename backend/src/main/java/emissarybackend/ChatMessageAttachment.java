@@ -1,6 +1,8 @@
 package emissarybackend;
 
 import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,6 +12,7 @@ import javax.persistence.Lob;
 
 @Entity
 public class ChatMessageAttachment {
+
 	private @Id @GeneratedValue Long id;
 
 	@Lob
@@ -17,6 +20,7 @@ public class ChatMessageAttachment {
 	private byte[] bytes;
 	private String name;
 	private String type;
+	private HashMap<String, Integer> poll;
 
 	public ChatMessageAttachment() {
 	}
@@ -30,11 +34,16 @@ public class ChatMessageAttachment {
 		this.type = type;
 	}
 
+	public ChatMessageAttachment(HashMap<String, Integer> poll) {
+		this.poll = poll;
+	}
+
 	public ChatMessageAttachment(ChatMessageAttachment other) {
 		this.id = other.id;
 		this.bytes = other.bytes;
 		this.name = other.name;
 		this.type = other.type;
+		this.poll = other.poll;
 	}
 
 	public byte[] getBytes() {
@@ -67,6 +76,14 @@ public class ChatMessageAttachment {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public Map<String, Integer> getPoll() {
+		return poll;
+	}
+
+	public void setPoll(HashMap<String, Integer> poll) {
+		this.poll = poll;
 	}
 
 	@Override

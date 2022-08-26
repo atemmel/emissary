@@ -46,11 +46,11 @@ class ChatMessageAttachmentController {
 			() -> new ChatMessageAttachmentNotFoundException(id));
 	}
 
-	@RequestMapping(value="/attachments/create",
+	@RequestMapping(value="/attachments/upload",
 		method=RequestMethod.POST,
 		consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Transactional
-	public ChatMessage create(
+	public ChatMessage upload(
 			@RequestParam("userId") Long userId, 
 			@RequestParam("conversationId") Long conversationId,
 			@RequestParam("file") MultipartFile document) {

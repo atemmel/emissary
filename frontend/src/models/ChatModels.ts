@@ -7,10 +7,13 @@ export type ChatMessage = {
   attachment: ChatMessageAttachment|null;
 }
 
+export type Poll = Map<string, number>;
+
 export type ChatMessageAttachment = {
 	name: string;
 	type: string;
 	bytes: string;
+	poll: Poll;
 }
 
 export type ConversationHeads = {

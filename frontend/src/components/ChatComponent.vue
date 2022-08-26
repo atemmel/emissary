@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import type {ChatMessage, ChatHead, ChatCaches, ChatCache} from "./../models/ChatModels";
+import type {ChatMessage, ChatHead, ChatCaches, ChatCache, ChatMessageAttachment, Poll} from "./../models/ChatModels";
 import ChatBubble from "./../components/ChatBubble.vue";
 import EmojiButton from "./../components/EmojiButton.vue";
 import UploadFileButton from "./../components/UploadFileButton.vue";
@@ -93,6 +93,35 @@ const initConversation = () => {
   if(props.currentConversationId == null) {
     return;
   }
+
+  /*
+  TODO: this
+
+  const msg: ChatMessage = {
+    id: 0,
+    contents: "",
+    author: props.currentUserId,
+    conversation: props.currentConversationId,
+    timestamp: new Date(),
+    attachment: {
+      name: "Test poll",
+      type: "",
+      bytes: "",
+      poll: new Map<string, number>([
+        ["Option A", 5],
+        ["Option B", 2],
+        ["Option C", 3],
+      ]) as Poll,
+    } as ChatMessageAttachment,
+  };
+
+  client.publish({
+    destination: "/chat/send",
+    body: JSON.stringify(msg),
+  });
+
+  */
+
   isPageinating.value = true;
   pageinationEnd.value = false;
   const firstHead = 20;
@@ -103,16 +132,16 @@ const initConversation = () => {
     + firstHead,
     {headers: {"Authorization": `Bearer ${token}`},},
   ).then((response: any) => {
+    head.value = {
+      friendsListHead: new Date(),
+      conversationHeads: {}
+    } as ChatHead;
     if(props.currentConversationId == null) {
       return;
     }
     chatMessages.value = response.data.messages;
     chatParticipants.value = response.data.participants;
     saveCache(props.currentConversationId);
-    head.value = {
-      friendsListHead: new Date(),
-      conversationHeads: {}
-    } as ChatHead;
     head.value.conversationHeads[props.currentConversationId] = response.data.messages.length;
     isPageinating.value = false;
   });
@@ -146,7 +175,7 @@ const pageinate = () => {
     + nextPage,
     {headers: {"Authorization": `Bearer ${token}`}})
   .then((response: any) => {
-    if(head.value == null ||props.currentConversationId == null) {
+    if(head.value == null || props.currentConversationId == null) {
       return;
     }
     const prefix = response.data as ChatMessage[];

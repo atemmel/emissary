@@ -19,6 +19,9 @@ const isVideo = () => props.message.attachment
   && props.message.attachment.bytes
   && props.message.attachment.type.startsWith("video/");
 
+const isPoll = () => props.message.attachment
+  && props.message.attachment.poll;
+
 const src = () => props.message.attachment
   ? `data:${props.message.attachment.type};base64,${props.message.attachment.bytes}`
   : "";
@@ -60,10 +63,10 @@ const download = () => {
 };
 
 const timeStr = new Date(props.message.timestamp)
-    .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit"});
+  .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit"});
 
 const timeTransform = {
-    'right': isUser(props.message.author),
+  'right': isUser(props.message.author),
 };
 
 const toggleTime = () => showTime.value = !showTime.value;
