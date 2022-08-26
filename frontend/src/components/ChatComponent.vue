@@ -93,7 +93,6 @@ const initConversation = () => {
   if(props.currentConversationId == null) {
     return;
   }
-  console.log("Init conversation");
   isPageinating.value = true;
   pageinationEnd.value = false;
   const firstHead = 20;
@@ -289,7 +288,6 @@ const pruneStaleCaches = () => {
     const then = value.timestamp.getTime();
     const delta = now - then;
     if(delta > threshold) {
-      console.log("Dropped cache", key);
       chatCaches.value.delete(key);
     }
   }
