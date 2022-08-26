@@ -2,6 +2,7 @@
 import axios from "axios";
 import type {ChatMessage, ChatHead, ChatCaches, ChatCache} from "./../models/ChatModels";
 import ChatBubble from "./../components/ChatBubble.vue";
+import EmojiButton from "./../components/EmojiButton.vue";
 import UploadFileButton from "./../components/UploadFileButton.vue";
 import {ref, onMounted, watch, nextTick} from "vue";
 import {Client} from "@stomp/stompjs";
@@ -23,7 +24,7 @@ const instance = axios.create({
 
 const message = ref<string>("");
 
-const chatCaches = ref<ChatCaches>({});
+const chatCaches = ref<ChatCaches>(new Map([]));
 const chatMessages = ref<ChatMessage[]>([]);
 const chatParticipants = ref<number[]>([]);
 
@@ -83,6 +84,7 @@ client.onConnect = () => {
     head.value.conversationHeads[props.currentConversationId] = newConversationHead;
   });
   setInterval(headPing, 3000);
+  setInterval(pruneStaleCaches, 5000);
 };
 
 client.activate();
@@ -125,7 +127,10 @@ const scrollToBottom = () => {
 };
 
 const pageinate = () => {
-  if(head.value == null || isPageinating.value || pageinationEnd.value ||props.currentConversationId == null) {
+  if(head.value == null 
+      || isPageinating.value 
+      || pageinationEnd.value 
+      ||props.currentConversationId == null) {
     return;
   }
   isPageinating.value = true;
@@ -237,11 +242,15 @@ const onScroll = () => {
 
     const scrollingUp = bubbles.scrollTop - prevScrollY.value <= 0;
     prevScrollY.value = bubbles.scrollTop;
-    if(bubbles.scrollTop != 0 || !scrollingUp) {
+    if(bubbles.scrollTop > 100 || !scrollingUp) {
       return;
     }
 
     pageinate();
+};
+
+const onEmojiPicked = (what: string) => {
+  message.value += what;
 };
 
 onMounted(() => {
@@ -249,15 +258,41 @@ onMounted(() => {
 });
 
 const saveCache = (id: number) => {
-  chatCaches.value[id] = {
+  console.log("init", id);
+  chatCaches.value.set(id, {
     messages: chatMessages.value,
     timestamp: new Date(),
-  } as ChatCache;
+  } as ChatCache);
 };
 
 const loadCache = (id: number) => {
-  chatMessages.value = chatCaches.value[id].messages
-  chatCaches.value[id].timestamp = new Date();
+  const cache = chatCaches.value.get(id);
+  if(cache == null) {
+    console.log("Loading nonexistent cache:", id);
+    return;
+  }
+  chatMessages.value = cache.messages;
+  cache.timestamp = new Date();
+  chatCaches.value.set(id, cache);
+};
+
+const pruneStaleCaches = () => {
+  const threshold = 1000 * 60 * 3;
+  const now = Date.now();
+  const currentConversation = props.currentConversationId;
+  for(const [key, value] of chatCaches.value) {
+    if(key == currentConversation) {
+      value.timestamp = new Date(now);
+      chatCaches.value.set(key, value);
+      continue;
+    }
+    const then = value.timestamp.getTime();
+    const delta = now - then;
+    if(delta > threshold) {
+      console.log("Dropped cache", key);
+      chatCaches.value.delete(key);
+    }
+  }
 };
 
 watch(() => props.currentConversationId,
@@ -266,7 +301,7 @@ watch(() => props.currentConversationId,
       return;
     }
     // cache check
-    const cached = props.currentConversationId in chatCaches.value;
+    const cached = chatCaches.value.get(props.currentConversationId) != undefined;
     if(cached) {
       // load cache instead
       loadCache(props.currentConversationId);
@@ -319,7 +354,9 @@ const emitLeave = () => {
         <UploadFileButton 
           @upload="onUpload"
         />
+        <EmojiButton @pick="onEmojiPicked"/>
         <textarea 
+          id="chat-textarea"
           v-model="message" 
           placeholder="Write your message here..." 
           v-on:keypress.enter.exact="sendMessage">

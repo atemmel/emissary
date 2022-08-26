@@ -1,4 +1,4 @@
-export interface ChatMessage {
+export type ChatMessage = {
   id: number|null;
   contents: string;
   author: number;
@@ -7,17 +7,17 @@ export interface ChatMessage {
   attachment: ChatMessageAttachment|null;
 }
 
-export interface ChatMessageAttachment {
+export type ChatMessageAttachment = {
 	name: string;
 	type: string;
 	bytes: string;
 }
 
-export interface ConversationHeads {
+export type ConversationHeads = {
 	[key: number]: number
 }
 
-export interface ChatHead {
+export type ChatHead = {
 	conversationHeads: ConversationHeads
 	friendsListHead: Date;
 }
@@ -27,6 +27,4 @@ export interface ChatCache {
 	timestamp: Date;
 }
 
-export interface ChatCaches {
-	[key: number]: ChatCache;
-}
+export type ChatCaches = Map<number, ChatCache>;
