@@ -8,6 +8,8 @@ const props = defineProps<{
   currentUserId: number;
 }>();
 
+const emit = defineEmits(["vote"]);
+
 const showTime = ref<boolean>(false);
 
 const isUser = (id: number) => props.currentUserId === id;
@@ -93,6 +95,8 @@ const calcWidth = (votes: number) => {
 };
 
 const toggleTime = () => showTime.value = !showTime.value;
+
+const emitVote = (what: string) => emit("vote", what, props.message);
 </script>
 
 <template>
@@ -130,6 +134,7 @@ const toggleTime = () => showTime.value = !showTime.value;
             :name="idx as string"
             :width="calcWidth(item)" 
             :votes="item"
+            @vote="emitVote"
           />
         </div>
       </div>

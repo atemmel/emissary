@@ -7,8 +7,15 @@ export type ChatMessage = {
   attachment: ChatMessageAttachment|null;
 }
 
-export interface Poll {
+export type Poll = {
 	[key:string]: number;
+}
+
+export type PollVote = {
+	id: number|null;
+	poll: number;
+	author: number;
+	choice: string;
 }
 
 export type ChatMessageAttachment = {

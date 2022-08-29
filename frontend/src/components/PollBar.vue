@@ -5,7 +5,11 @@ const props = defineProps<{
   votes: number;
 }>();
 
+const emit = defineEmits(["vote"]);
+
 const votesStr = () => props.votes == 1 ? "vote" : "votes";
+
+const emitVote = () => emit("vote", props.name);
 
 </script>
 
@@ -15,7 +19,7 @@ const votesStr = () => props.votes == 1 ? "vote" : "votes";
     </div>
   <div class="outer">
     <div class="bar-wrapper">
-      <div class="bar" :style="{'width': width + '%'}" ></div>
+      <div class="bar" :style="{'width': width + '%'}" @click="emitVote"></div>
     </div>
     <div class="bar-votes">
       {{width}}% <br>({{votes}} {{votesStr()}})

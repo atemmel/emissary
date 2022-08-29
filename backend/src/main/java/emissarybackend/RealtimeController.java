@@ -22,16 +22,19 @@ class RealtimeController {
 	private final ChatMessageRepository chatRepo;
 	private final ChatConversationRepository conversationRepo;
 	private final ChatMessageAttachmentRepository attachmentRepo;
+	private final PollVoteRepository voteRepository;
 
 	RealtimeController(
 			EmissaryUserRepository userRepo,
 			ChatMessageRepository chatRepo, 
 			ChatConversationRepository conversationRepo,
-			ChatMessageAttachmentRepository attachmentRepo) {
+			ChatMessageAttachmentRepository attachmentRepo,
+			PollVoteRepository voteRepository) {
 		this.userRepo = userRepo;
 		this.chatRepo = chatRepo;
 		this.conversationRepo = conversationRepo;
 		this.attachmentRepo = attachmentRepo;
+		this.voteRepository = voteRepository;
 	}
 
 	// client publishes to this
@@ -39,7 +42,7 @@ class RealtimeController {
 	// client subscribes to this
 	@SendTo("/chat")
 	@Transactional
-	public ChatMessage newMessage(ChatMessage message) {
+	public Map<String, Object> newMessage(ChatMessage message) {
 		log.info("Begin message handling...");
 		final var contents = message.getContents();
 		final var attachment = message.getAttachment();
@@ -66,7 +69,38 @@ class RealtimeController {
 				() -> new ChatConversationNotFoundException(convId));
 		conv.addMessage(message);
 		log.info("Saved new message");
-		return message;
+		return Map.of("message", message);
+	}
+
+	@MessageMapping("/chat/vote")
+	@SendTo("/chat")
+	@Transactional
+	public Map<String, Object> newVote(PollVote vote) {
+
+		final var author = vote.getAuthor();
+		final var poll = vote.getPoll().getAttachment();
+		final var votes = voteRepository.findByAuthor(author);
+		PollVote prevVote = null;
+		for(var other: votes) {
+			if(other.getAuthor().getId() == author.getId()) {
+				prevVote = other;
+				break;
+			}
+		}
+
+		final var map = poll.getPoll();
+		if(prevVote != null) {
+			var voteCount = map.get(prevVote.getChoice());
+			map.put(prevVote.getChoice(), voteCount - 1);
+			voteRepository.deleteById(prevVote.getId());
+		}
+		var voteCount = map.get(vote.getChoice());
+		map.put(vote.getChoice(), voteCount + 1);
+		poll.setPoll(map);
+		vote = voteRepository.save(vote);
+
+		log.info("Voted " + vote.getChoice());
+		return Map.of("vote", vote);
 	}
 
 	@MessageMapping("/chat/askhead/")

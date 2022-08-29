@@ -1,6 +1,8 @@
 package emissarybackend;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 
 import javax.transaction.Transactional;
 
@@ -11,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -87,10 +90,58 @@ class ChatMessageAttachmentController {
 		return null;
 	}
 
-	/*
+	public static class PollInfo {
+		private List<String> choices;
+		private Long authorId;
+		private Long conversationId;
+
+		public PollInfo() {
+
+		}
+
+		public List<String> getChoices() {
+			return choices;
+		}
+
+		public void setChoices(List<String> choices) {
+			this.choices = choices;
+		}
+
+		public Long getAuthorId() {
+			return authorId;
+		}
+
+		public void setAuthorId(Long authorId) {
+			this.authorId = authorId;
+		}
+
+		public Long getConversationId() {
+			return conversationId;
+		}
+
+		public void setConversationId(Long conversationId) {
+			this.conversationId = conversationId;
+		}
+	};
+
 	@RequestMapping(value="/attachments/createPoll",
 		method=RequestMethod.POST)
-	public ChatMessage createPoll(
-			@Req
-	*/
+	@Transactional
+	public ChatMessage createPoll(@RequestBody PollInfo pollInfo) {
+		final var conversation = conversationRepo.findById(pollInfo.conversationId).orElseThrow(
+				() -> new ChatConversationNotFoundException(pollInfo.conversationId));
+		final var author = userRepo.findById(pollInfo.authorId).orElseThrow(
+				() -> new EmissaryUserNotFoundException(pollInfo.authorId));
+		var message = new ChatMessage();
+		message.setAuthor(author);
+		final var poll = new HashMap<String, Integer>();
+		for(final var key: pollInfo.choices) {
+			poll.put(key, 0);
+		}
+		final var attachment = new ChatMessageAttachment(poll);
+		message.setAttachment(attachmentRepo.save(attachment));
+		message = chatRepo.save(message);
+		conversation.addMessage(message);
+		return message;
+	}
 }

@@ -26,9 +26,9 @@ public class ChatMessageAttachment {
 	private String type;
 	
 	@ElementCollection
-	@CollectionTable(name = "chat_polls", joinColumns = @JoinColumn(name = "poll_id"))
-	@MapKeyColumn(name = "field_key")
-	@Column(name = "field_val")
+	@CollectionTable(name="chat_polls", joinColumns=@JoinColumn(name="poll_id"))
+	@MapKeyColumn(name="field_key")
+	@Column(name="field_val")
 	private Map<String, Integer> poll = new HashMap<String, Integer>();
 
 	public ChatMessageAttachment() {

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import axios from "axios";
-import type {ChatMessage, ChatHead, ChatCaches, ChatCache, ChatMessageAttachment, Poll} from "./../models/ChatModels";
+import type {ChatMessage, ChatHead, ChatCaches, ChatCache, PollVote, Poll, ChatMessageAttachment} from "./../models/ChatModels";
 import ChatBubble from "./../components/ChatBubble.vue";
 import EmojiButton from "./../components/EmojiButton.vue";
+import CreatePollButton from "./../components/CreatePollButton.vue";
 import UploadFileButton from "./../components/UploadFileButton.vue";
 import {ref, onMounted, watch, nextTick} from "vue";
 import {Client} from "@stomp/stompjs";
@@ -46,11 +47,20 @@ client.onConnect = () => {
     if(!msg.body) {
       return;
     }
-    const recvMsg = JSON.parse(msg.body) as ChatMessage;
-    if(recvMsg.conversation == props.currentConversationId) {
-      chatMessages.value.push(recvMsg);
+    const obj = JSON.parse(msg.body);
+    if(obj.message) {
+      const recvMsg = obj.message as ChatMessage;
+      if(recvMsg.conversation == props.currentConversationId) {
+        chatMessages.value.push(recvMsg);
+      }
+      emit("newMessage");
+
+    } else if(obj.vote) {
+      const vote = obj.vote as PollVote;
+      console.log("Recieved vote", vote);
+    } else {
+      console.log("Did not handle message");
     }
-    emit("newMessage");
   });
   client.subscribe("/chat/head", (msg: Message) => {
     if(props.currentConversationId == null) {
@@ -253,6 +263,48 @@ const onEmojiPicked = (what: string) => {
   message.value += what;
 };
 
+const onVote = (what: string, where: number) => {
+  console.log("Voting");
+  if(props.currentConversationId == null) {
+    return;
+  }
+  const vote: PollVote = {
+    id: null,
+    author: props.currentUserId,
+    choice: what,
+    poll: where,
+  };
+
+  client.publish({
+    destination: "/chat/vote",
+    body: JSON.stringify(vote),
+  });
+};
+
+const onCreatePollButtonClicked = () => {
+  const msg = {
+    id: 0,
+    contents: "",
+    author: props.currentUserId,
+    conversation: props.currentConversationId,
+    timestamp: new Date(),
+    attachment: {
+      name: "Test poll",
+      type: "",
+      bytes: "",
+      poll: {
+        "Option A": 5,
+        "Option B": 2,
+        "Option C": 3,
+      } as Poll,
+    } as ChatMessageAttachment,
+  };
+  client.publish({
+    destination: "/chat/send",
+    body: JSON.stringify(msg),
+  });
+};
+
 onMounted(() => {
   initConversation();
 });
@@ -345,6 +397,7 @@ const emitLeave = () => {
         :key="idx" 
         :message="message" 
         :current-user-id="currentUserId" 
+        @vote="onVote"
       />
       <div id="bubbles-anchor"></div>
     </div>
@@ -353,6 +406,7 @@ const emitLeave = () => {
         <UploadFileButton 
           @upload="onUpload"
         />
+        <CreatePollButton @poll-create="onCreatePollButtonClicked"/>
         <EmojiButton @pick="onEmojiPicked"/>
         <textarea 
           id="chat-textarea"
