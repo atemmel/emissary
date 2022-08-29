@@ -94,34 +94,6 @@ const initConversation = () => {
     return;
   }
 
-  /*
-  TODO: this
-
-  const msg: ChatMessage = {
-    id: 0,
-    contents: "",
-    author: props.currentUserId,
-    conversation: props.currentConversationId,
-    timestamp: new Date(),
-    attachment: {
-      name: "Test poll",
-      type: "",
-      bytes: "",
-      poll: new Map<string, number>([
-        ["Option A", 5],
-        ["Option B", 2],
-        ["Option C", 3],
-      ]) as Poll,
-    } as ChatMessageAttachment,
-  };
-
-  client.publish({
-    destination: "/chat/send",
-    body: JSON.stringify(msg),
-  });
-
-  */
-
   isPageinating.value = true;
   pageinationEnd.value = false;
   const firstHead = 20;
@@ -361,7 +333,7 @@ const emitLeave = () => {
   <div id="chat">
     <div id="chat-options" v-show="currentConversationId != null">
       <div class="chat-option-wrapper" @click="emitInviteUser">
-          Invite to chat
+        Invite to chat
       </div>
       <div class="chat-option-wrapper" @click="emitLeave">
           <span class="evil">Leave Chat</span>
@@ -405,6 +377,7 @@ const emitLeave = () => {
 #chat-bubbles {
   padding: 10px;
   overflow-y: auto;
+  overflow-x: none;
   height: 85vh;
 }
 

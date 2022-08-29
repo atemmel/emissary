@@ -44,7 +44,9 @@ class RealtimeController {
 		final var contents = message.getContents();
 		final var attachment = message.getAttachment();
 		boolean lacksMessage = contents.isEmpty() || contents.isBlank();
-		boolean lacksAttachment = attachment == null || attachment.getBytes().length <= 0;
+		boolean lacksAttachment = attachment == null 
+			|| (attachment.getBytes().length <= 0 
+			&& attachment.getPoll() == null);
 		if(lacksMessage && lacksAttachment) {
 			log.info("Did not store message, as both the attachment and the message contents were empty");
 			return null;
@@ -52,6 +54,9 @@ class RealtimeController {
 
 		if(!lacksAttachment) {
 			log.info("Saved new message attachment");
+			if(attachment.getPoll() != null) {
+				log.info("Poll has " + attachment.getPoll().size() + " options");
+			}
 			message.setAttachment(attachmentRepo.save(attachment));
 		}
 

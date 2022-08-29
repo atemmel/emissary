@@ -86,4 +86,11 @@ class ChatMessageAttachmentController {
 		}
 		return null;
 	}
+
+	/*
+	@RequestMapping(value="/attachments/createPoll",
+		method=RequestMethod.POST)
+	public ChatMessage createPoll(
+			@Req
+	*/
 }

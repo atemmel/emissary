@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type {ChatMessage} from "./../models/ChatModels";
+import PollBar from "./PollBar.vue";
 import {ref} from "vue";
 
 const props = defineProps<{
@@ -27,6 +28,7 @@ const src = () => props.message.attachment
   : "";
 
 const transformClass = {
+  'poll': isPoll(),
   'user': isUser(props.message.author),
   'stranger': !isUser(props.message.author),
 }
@@ -69,6 +71,27 @@ const timeTransform = {
   'right': isUser(props.message.author),
 };
 
+const totalVotes = () => {
+  if(!props.message.attachment || !props.message.attachment.poll) {
+    return 0;
+  }
+  const poll = props.message.attachment.poll;
+  let sum = 0;
+  for(const key in poll ) {
+    const value = poll[key];
+    sum += value;
+  }
+  return sum;
+};
+
+const calcWidth = (votes: number) => {
+  const total = totalVotes();
+  if(total == 0) {
+    return 0;
+  }
+  return votes / total * 100.0;
+};
+
 const toggleTime = () => showTime.value = !showTime.value;
 </script>
 
@@ -95,6 +118,20 @@ const toggleTime = () => showTime.value = !showTime.value;
         <video class="video" controls>
           <source :src="src()"/>
         </video>
+      </div>
+      <!-- Poll -->
+      <div v-else-if="isPoll()"
+        @click="toggleTime"
+        :class="bgClass"
+        class="bubble text">
+        <div class="center-text">Poll</div>
+        <div v-for="(item, idx) in message.attachment.poll" :key="idx">
+          <PollBar 
+            :name="idx as string"
+            :width="calcWidth(item)" 
+            :votes="item"
+          />
+        </div>
       </div>
       <!-- Other attachment -->
       <div v-else :class="bgClass" class="bubble text">
@@ -179,8 +216,17 @@ const toggleTime = () => showTime.value = !showTime.value;
   max-height: 200px;
 }
 
+.poll {
+  margin: 0 auto;
+  float: none;
+}
+
 .text {
   padding: 8px 16px;
+}
+
+.center-text {
+  text-align: center;
 }
 
 .file:hover {

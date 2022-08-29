@@ -7,7 +7,9 @@ export type ChatMessage = {
   attachment: ChatMessageAttachment|null;
 }
 
-export type Poll = Map<string, number>;
+export interface Poll {
+	[key:string]: number;
+}
 
 export type ChatMessageAttachment = {
 	name: string;

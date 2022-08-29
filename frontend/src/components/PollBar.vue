@@ -1,0 +1,57 @@
+<script setup lang="ts">
+const props = defineProps<{
+  name: string;
+  width: number;
+  votes: number;
+}>();
+
+const votesStr = () => props.votes == 1 ? "vote" : "votes";
+
+</script>
+
+<template>
+    <div class="bar-title">
+      {{name}}
+    </div>
+  <div class="outer">
+    <div class="bar-wrapper">
+      <div class="bar" :style="{'width': width + '%'}" ></div>
+    </div>
+    <div class="bar-votes">
+      {{width}}% <br>({{votes}} {{votesStr()}})
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.bar {
+  height: 2em;
+  width: 0%;
+  background-color: var(--color-text);
+  border-radius: 16px;
+}
+
+.bar:hover {
+  background-color: #EEE;
+}
+
+.bar-wrapper {
+  width: 91%;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.bar-title {
+  display: inline-block;
+}
+
+.bar-votes {
+  display: inline-block;
+  width: 9%;
+  vertical-align: middle;
+}
+
+.outer {
+  padding: 4px;
+}
+</style>

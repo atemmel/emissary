@@ -4,11 +4,15 @@ import java.util.Objects;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.MapKeyColumn;
 
 @Entity
 public class ChatMessageAttachment {
@@ -20,7 +24,12 @@ public class ChatMessageAttachment {
 	private byte[] bytes;
 	private String name;
 	private String type;
-	private HashMap<String, Integer> poll;
+	
+	@ElementCollection
+	@CollectionTable(name = "chat_polls", joinColumns = @JoinColumn(name = "poll_id"))
+	@MapKeyColumn(name = "field_key")
+	@Column(name = "field_val")
+	private Map<String, Integer> poll = new HashMap<String, Integer>();
 
 	public ChatMessageAttachment() {
 	}
@@ -82,7 +91,7 @@ public class ChatMessageAttachment {
 		return poll;
 	}
 
-	public void setPoll(HashMap<String, Integer> poll) {
+	public void setPoll(Map<String, Integer> poll) {
 		this.poll = poll;
 	}
 
