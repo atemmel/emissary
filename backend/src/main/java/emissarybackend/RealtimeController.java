@@ -78,7 +78,8 @@ class RealtimeController {
 	public Map<String, Object> newVote(PollVote vote) {
 
 		final var author = vote.getAuthor();
-		final var poll = vote.getPoll().getAttachment();
+		final var poll = vote.getPoll();
+		final var attachment = poll.getAttachment();
 		final var votes = voteRepository.findByAuthor(author);
 		PollVote prevVote = null;
 		for(var other: votes) {
@@ -88,7 +89,7 @@ class RealtimeController {
 			}
 		}
 
-		final var map = poll.getPoll();
+		final var map = attachment.getPoll();
 		if(prevVote != null) {
 			var voteCount = map.get(prevVote.getChoice());
 			map.put(prevVote.getChoice(), voteCount - 1);
@@ -96,7 +97,7 @@ class RealtimeController {
 		}
 		var voteCount = map.get(vote.getChoice());
 		map.put(vote.getChoice(), voteCount + 1);
-		poll.setPoll(map);
+		attachmentRepo.save(attachment);
 		vote = voteRepository.save(vote);
 
 		log.info("Voted " + vote.getChoice());

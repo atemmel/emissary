@@ -27,6 +27,12 @@ class ChatMessageController {
 		return chatRepo.findAll();
 	}
 
+	@GetMapping("/messages/{id}")
+	public ChatMessage one(@PathVariable Long id) {
+		return chatRepo.findById(id).orElseThrow(
+				() -> new RuntimeException("Chat message with id " + id + " not found"));
+	}
+
 	@GetMapping("/message/fromAttachment/{id}")
 	public ChatMessage fromAttachment(@PathVariable Long id) {
 		final var attachment = attachmentRepo.findById(id).orElseThrow(

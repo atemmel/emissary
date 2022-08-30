@@ -57,7 +57,7 @@ client.onConnect = () => {
 
     } else if(obj.vote) {
       const vote = obj.vote as PollVote;
-      console.log("Recieved vote", vote);
+      handleVote(vote);
     } else {
       console.log("Did not handle message");
     }
@@ -130,11 +130,25 @@ const initConversation = () => {
 };
 
 const scrollToBottom = () => {
-    const bubbles = document.getElementById("chat-bubbles");
-    if(bubbles != null) {
-      bubbles.scrollTop = bubbles.scrollHeight;
-    }
+  const bubbles = document.getElementById("chat-bubbles");
+  if(bubbles != null) {
+    bubbles.scrollTop = bubbles.scrollHeight;
+  }
 };
+
+const handleVote = (vote: PollVote) => {
+  const token = store.state.jwtToken;
+  instance.get("/messages/" + vote.poll,
+    {headers: {"Authorization": `Bearer ${token}`}},
+  ).then((response: any) => {
+    const id = response.data.id;
+    const idx = chatMessages.value.findIndex((msg: ChatMessage) => id == msg.id);
+    if(idx == null) {
+      return;
+    }
+    chatMessages.value[idx] = response.data;
+  });
+}
 
 const pageinate = () => {
   if(head.value == null 

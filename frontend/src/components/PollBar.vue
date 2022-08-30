@@ -14,7 +14,7 @@ const emitVote = () => emit("vote", props.name);
 </script>
 
 <template>
-    <div class="bar-title">
+    <div class="bar-title" @click="emitVote">
       {{name}}
     </div>
   <div class="outer">
@@ -33,6 +33,7 @@ const emitVote = () => emit("vote", props.name);
   width: 0%;
   background-color: var(--color-text);
   border-radius: 16px;
+  transition: width 0.25s;
 }
 
 .bar:hover {
