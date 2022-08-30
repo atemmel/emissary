@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import axios from "axios";
 import SelectUsersDialogItem from "./SelectUsersDialogItem.vue";
 import type {EmissaryUser} from "./../models/EmissaryUser";
 import OverlayDialog from "./OverlayDialog.vue";
 import {ref, watch} from "vue";
+import {useApi} from "./../api";
 import {useStore} from "./../store";
 
 const props = defineProps<{
@@ -14,23 +14,17 @@ const props = defineProps<{
   filter: ((user: EmissaryUser) => boolean) | null;
 }>();
 
+const api = useApi();
 const store = useStore();
 
 const emit = defineEmits(["close", "submit"]);
-
-const instance = axios.create({
-  baseURL: "http://localhost:8080/api",
-});
 
 const allUsers = ref<EmissaryUser[]>([]);
 
 const selectedUsers = ref<EmissaryUser[]>([]);
 
 const getAllUsersNotSelf = () => {
-  const token = store.state.jwtToken;
-  instance.get("/users/", {
-    headers: {"Authorization": `Bearer ${token}`},
-  }).then((response: any) => {
+  api.get("/users/").then((response: any) => {
     const users = response.data as EmissaryUser[];
     allUsers.value = users.filter((usr) => usr.id != store.state.userId);
     if(props.filter != null) {
@@ -97,7 +91,7 @@ const sendSubmit = () => {
     <div v-show="maySubmit()" 
       class="submit-conversation-button" 
       @click="sendSubmit">
-        {{submitTitle}}
+      {{submitTitle}}
     </div>
   </OverlayDialog>
 </template>

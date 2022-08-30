@@ -80,7 +80,7 @@ class RealtimeController {
 		final var author = vote.getAuthor();
 		final var poll = vote.getPoll();
 		final var attachment = poll.getAttachment();
-		final var votes = voteRepository.findByAuthor(author);
+		final var votes = voteRepository.findByPoll(poll);
 		PollVote prevVote = null;
 		for(var other: votes) {
 			if(other.getAuthor().getId() == author.getId()) {

@@ -9,6 +9,8 @@ const emit = defineEmits(["vote"]);
 
 const votesStr = () => props.votes == 1 ? "vote" : "votes";
 
+const percentStr = () => props.width.toPrecision(3);
+
 const emitVote = () => emit("vote", props.name);
 
 </script>
@@ -22,7 +24,7 @@ const emitVote = () => emit("vote", props.name);
       <div class="bar" :style="{'width': width + '%'}" @click="emitVote"></div>
     </div>
     <div class="bar-votes">
-      {{width}}% <br>({{votes}} {{votesStr()}})
+      {{percentStr()}}% <br>({{votes}} {{votesStr()}})
     </div>
   </div>
 </template>
@@ -31,6 +33,7 @@ const emitVote = () => emit("vote", props.name);
 .bar {
   height: 2em;
   width: 0%;
+  min-width: 5%;
   background-color: var(--color-text);
   border-radius: 16px;
   transition: width 0.25s;

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import {ref} from "vue";
-import axios from "axios";
 import {useStore} from "./../store";
+import {useAuthApi} from "./../api";
 import {useRouter} from "vue-router";
 import { tryReadSessionIntoStore } from "@/session";
 
+const api = useAuthApi();
 const store = useStore();
 const router = useRouter();
 
@@ -18,10 +19,6 @@ const password = ref<string>("");
 
 const isLogin = ref<boolean>(true);
 
-const instance = axios.create({
-  baseURL: "http://localhost:8080",
-});
-
 const formError = ref<string>("");
 
 const isAuthorizing = ref<boolean>(false);
@@ -31,14 +28,14 @@ const toggleForm = () => {
 };
 
 const login = () => {
-  auth("/auth/login", {
+  auth("/login", {
     username: username.value,
     password: password.value,
   });
 };
 
 const register = () => {
-  auth("/auth/register", {
+  auth("/register", {
     name: username.value,
     password: password.value,
   });
@@ -46,7 +43,7 @@ const register = () => {
 
 const auth = (url: string, data: any) => {
   isAuthorizing.value = true;
-  instance.post(url, data).then((response: any) => {
+  api.post(url, data).then((response: any) => {
     if(response.data.error){
       formError.value = response.data.error;
       isAuthorizing.value = false;

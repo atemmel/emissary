@@ -4,3 +4,28 @@
   padding: 26px 18px;
   font-weight: bold;
 }
+
+.submit-button {
+  padding: 0px 8px;
+  background-color: #555;
+  border-radius: 0px 0px 0px 16px;
+  padding: 8px;
+  display: inline-block;
+  width: 50%;
+}
+
+.button-left {
+  border-radius: 0px 0px 0px 16px;
+  border-right: 1px solid #777;
+}
+
+.button-right {
+  border-radius: 0px 0px 16px 0px;
+  border-left: 1px solid #777;
+  background-color: #555;
+}
+
+.submit-button:hover {
+  background-color: #888;
+  cursor: pointer;
+}

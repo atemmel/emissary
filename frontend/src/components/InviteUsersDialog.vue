@@ -1,19 +1,14 @@
 <script setup lang="ts">
-import axios from "axios";
 import SelectUsersDialog from "./SelectUsersDialog.vue";
 import type {EmissaryUser} from "./../models/EmissaryUser";
-import {useStore} from "./../store";
+import {useApi} from "./../api";
 const props = defineProps<{
   visible: boolean;
   chatParticipants: number[];
   currentConversationId: number | null;
 }>();
 
-const store = useStore();
-
-const instance = axios.create({
-  baseURL: "http://localhost:8080/api",
-});
+const api = useApi();
 
 const onSubmit = (users: EmissaryUser[]) => {
   const participants = users.map((user) => user.id);
@@ -31,11 +26,10 @@ const postNewParticipants = (participants: number[]) => {
   if(props.currentConversationId == null) {
     return;
   }
-  const token = store.state.jwtToken;
-  instance.post("/conversations/addParticipants", {
+  api.post("/conversations/addParticipants", {
       users: participants,
       conversationId: props.currentConversationId,
-    }, {headers: {"Authorization": `Bearer ${token}`}});
+    });
 };
 
 </script>

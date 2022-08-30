@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import axios from "axios";
 import type {EmissaryUser} from "./../models/EmissaryUser";
+import {useApi} from "./../api";
 import {useStore} from "./../store";
 import SelectUsersDialog from "./SelectUsersDialog.vue";
 
@@ -10,11 +10,8 @@ defineProps<{
 
 const emit = defineEmits(["submit"]);
 
+const api = useApi();
 const store = useStore();
-
-const instance = axios.create({
-  baseURL: "http://localhost:8080/api",
-});
 
 const onSubmit = (users: EmissaryUser[]) => {
   const doEmit = () => emit("submit");
@@ -23,13 +20,10 @@ const onSubmit = (users: EmissaryUser[]) => {
     return;
   }
   idList.push(store.state.userId);
-  const token = store.state.jwtToken;
-  instance.post("/conversations/create", {
+  api.post("/conversations/create", {
       participants: idList,
       messages: [],
-    }, {
-    headers: {"Authorization": `Bearer ${token}`},
-  }).then(() => doEmit())
+    }).then(() => doEmit())
   .catch(() => doEmit());
 };
 

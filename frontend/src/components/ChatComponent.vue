@@ -1,27 +1,24 @@
 <script setup lang="ts">
-import axios from "axios";
 import type {ChatMessage, ChatHead, ChatCaches, ChatCache, PollVote, Poll, ChatMessageAttachment} from "./../models/ChatModels";
 import ChatBubble from "./../components/ChatBubble.vue";
 import EmojiButton from "./../components/EmojiButton.vue";
 import CreatePollButton from "./../components/CreatePollButton.vue";
 import UploadFileButton from "./../components/UploadFileButton.vue";
 import {ref, onMounted, watch, nextTick} from "vue";
-import {Client} from "@stomp/stompjs";
-import type {Message} from "@stomp/stompjs";
-import {useStore} from "./../store";
-
-const store = useStore();
+import type {Client, Message} from "@stomp/stompjs";
+import {useApi} from "../api";
 
 const props = defineProps<{
+  client: Client;
   currentConversationId: number | null;
   currentUserId: number;
 }>();
 
-const emit = defineEmits(["newMessage", "openInviteUserDialog", "openLeaveDialog"]);
+const client = ref<Client>(props.client);
 
-const instance = axios.create({
-  baseURL: "http://localhost:8080/api",
-});
+const emit = defineEmits(["newMessage", "openInviteUserDialog", "openLeaveDialog", "openCreatePollDialog"]);
+
+const api = useApi();
 
 const message = ref<string>("");
 
@@ -34,16 +31,9 @@ const head = ref<ChatHead|null>(null);
 const isPageinating = ref<boolean>(true);
 const pageinationEnd = ref<boolean>(false);
 
-const client = new Client({
-  brokerURL: "ws://localhost:8080/ws/websocket",
-  reconnectDelay: 5000,
-  heartbeatIncoming: 4000,
-  heartbeatOutgoing: 4000,
-});
-
-client.onConnect = () => {
+client.value.onConnect = () => {
   console.log("Client is connected");
-  client.subscribe("/chat", (msg: Message) => {
+  client.value.subscribe("/chat", (msg: Message) => {
     if(!msg.body) {
       return;
     }
@@ -62,7 +52,7 @@ client.onConnect = () => {
       console.log("Did not handle message");
     }
   });
-  client.subscribe("/chat/head", (msg: Message) => {
+  client.value.subscribe("/chat/head", (msg: Message) => {
     if(props.currentConversationId == null) {
       return;
     }
@@ -97,7 +87,7 @@ client.onConnect = () => {
   setInterval(pruneStaleCaches, 5000);
 };
 
-client.activate();
+client.value.activate();
 
 const initConversation = () => {
   if(props.currentConversationId == null) {
@@ -107,12 +97,10 @@ const initConversation = () => {
   isPageinating.value = true;
   pageinationEnd.value = false;
   const firstHead = 20;
-  const token = store.state.jwtToken;
-  instance.get("/conversations/" 
+  api.get("/conversations/" 
     + props.currentConversationId 
     + "/init/?count="
     + firstHead,
-    {headers: {"Authorization": `Bearer ${token}`},},
   ).then((response: any) => {
     head.value = {
       friendsListHead: new Date(),
@@ -137,10 +125,8 @@ const scrollToBottom = () => {
 };
 
 const handleVote = (vote: PollVote) => {
-  const token = store.state.jwtToken;
-  instance.get("/messages/" + vote.poll,
-    {headers: {"Authorization": `Bearer ${token}`}},
-  ).then((response: any) => {
+  api.get("/messages/" + vote.poll).then(
+  (response: any) => {
     const id = response.data.id;
     const idx = chatMessages.value.findIndex((msg: ChatMessage) => id == msg.id);
     if(idx == null) {
@@ -162,14 +148,12 @@ const pageinate = () => {
   const thisPage = head.value.conversationHeads[props.currentConversationId];
   const nextPage = thisPage + delta;
 
-  const token = store.state.jwtToken;
-  instance.get("/conversations/"
+  api.get("/conversations/"
     + props.currentConversationId
     + "/history/?from="
     + thisPage
     + "&to="
-    + nextPage,
-    {headers: {"Authorization": `Bearer ${token}`}})
+    + nextPage)
   .then((response: any) => {
     if(head.value == null || props.currentConversationId == null) {
       return;
@@ -187,13 +171,11 @@ const catchup = (from: number) => {
   if(props.currentConversationId == null) {
     return;
   }
-  const token = store.state.jwtToken;
   const url = "/conversations/" 
     + props.currentConversationId
     + "/catchup?from="
     + from;
-  instance.get(url, 
-    {headers: {"Authorization": `Bearer ${token}`}},
+  api.get(url, 
   ).then((response: any) => {
     if(!response || !response.data) {
       return;
@@ -207,7 +189,7 @@ const catchup = (from: number) => {
 
 const sendMessage = (e: Event) => {
   e.preventDefault();
-  if(!client.active || !props.currentConversationId) {
+  if(!client.value.active || !props.currentConversationId) {
     return;
   }
 
@@ -220,7 +202,7 @@ const sendMessage = (e: Event) => {
     attachment: null,
   };
 
-  client.publish({
+  client.value.publish({
     destination: "/chat/send",
     body: JSON.stringify(msg),
   });
@@ -228,17 +210,17 @@ const sendMessage = (e: Event) => {
 };
 
 const headPing = () => {
-  if(!client.active || !props.currentConversationId) {
+  if(!client.value.active || !props.currentConversationId) {
     return;
   }
-  client.publish({
+  client.value.publish({
     destination: "/chat/askhead/" + props.currentConversationId,
     body: JSON.stringify(props.currentConversationId),
   });
 };
 
 const onUpload = (file: File) => {
-  if(!client.active || !props.currentConversationId) {
+  if(!client.value.active || !props.currentConversationId) {
     return;
   }
 
@@ -246,12 +228,8 @@ const onUpload = (file: File) => {
   formData.append("userId", props.currentUserId.toString());
   formData.append("conversationId", props.currentConversationId.toString());
   formData.append("file", file);
-  const token = store.state.jwtToken;
-  instance.post("/attachments/create", formData, {
-    headers: {
-      "Authorization": `Bearer ${token}`,
+  api.postHeaders("/attachments/create", formData, {
       "Content-Type": "multipart/form-data",
-    },
   });
   headPing();
 };
@@ -278,7 +256,6 @@ const onEmojiPicked = (what: string) => {
 };
 
 const onVote = (what: string, where: number) => {
-  console.log("Voting");
   if(props.currentConversationId == null) {
     return;
   }
@@ -289,33 +266,9 @@ const onVote = (what: string, where: number) => {
     poll: where,
   };
 
-  client.publish({
+  client.value.publish({
     destination: "/chat/vote",
     body: JSON.stringify(vote),
-  });
-};
-
-const onCreatePollButtonClicked = () => {
-  const msg = {
-    id: 0,
-    contents: "",
-    author: props.currentUserId,
-    conversation: props.currentConversationId,
-    timestamp: new Date(),
-    attachment: {
-      name: "Test poll",
-      type: "",
-      bytes: "",
-      poll: {
-        "Option A": 5,
-        "Option B": 2,
-        "Option C": 3,
-      } as Poll,
-    } as ChatMessageAttachment,
-  };
-  client.publish({
-    destination: "/chat/send",
-    body: JSON.stringify(msg),
   });
 };
 
@@ -393,6 +346,10 @@ const emitLeave = () => {
   emit("openLeaveDialog");
 };
 
+const emitCreatePoll = () => {
+  emit("openCreatePollDialog");
+};
+
 </script>
 
 <template>
@@ -420,7 +377,7 @@ const emitLeave = () => {
         <UploadFileButton 
           @upload="onUpload"
         />
-        <CreatePollButton @poll-create="onCreatePollButtonClicked"/>
+        <CreatePollButton @poll-create="emitCreatePoll"/>
         <EmojiButton @pick="onEmojiPicked"/>
         <textarea 
           id="chat-textarea"

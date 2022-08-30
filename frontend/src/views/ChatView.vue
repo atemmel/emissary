@@ -6,10 +6,20 @@ import {ref} from "vue";
 import router from "./../router";
 import {useStore} from "./../store";
 import {tryReadSessionIntoStore} from "./../session";
+import {Client} from "@stomp/stompjs";
 import InviteUsersDialog from "../components/InviteUsersDialog.vue";
 import LeaveConversationDialog from "../components/LeaveConversationDialog.vue";
+import CreatePollDialog from "../components/CreatePollDialog.vue";
 
 const store = useStore();
+
+const client = ref<Client>(new Client({
+  brokerURL: "ws://localhost:8080/ws/websocket",
+  reconnectDelay: 5000,
+  heartbeatIncoming: 4000,
+  heartbeatOutgoing: 4000,
+}));
+
 
 const currentConversationId = ref<number|null>(null);
 
@@ -39,6 +49,8 @@ const createNewConversationDialogVisible = ref<boolean>(false);
 const inviteUserDialogVisible = ref<boolean>(false);
 
 const leaveConversationDialogVisible = ref<boolean>(false);
+
+const createPollDialogVisible = ref<boolean>(false);
 
 const hasConversation = () => currentConversationId.value != null;
 
@@ -84,6 +96,17 @@ const onSubmitLeaveConversationDialog = () => {
   updateFriendsList();
 };
 
+const onOpenCreatePollDialog = () => {
+  createPollDialogVisible.value = true;
+}
+
+const onCloseCreatePollDialog = () => {
+  createPollDialogVisible.value = false;
+}
+const onSubmitCreatePollDialog = () => {
+  onCloseCreatePollDialog();
+}
+
 </script>
 
 <template>
@@ -108,6 +131,14 @@ const onSubmitLeaveConversationDialog = () => {
       @close="onCloseLeaveConversationDialog"
       @submit="onSubmitLeaveConversationDialog"
     />
+    <CreatePollDialog
+      :client="client"
+      :visible="createPollDialogVisible"
+      :current-conversation-id="currentConversationId"
+      :current-user-id="currentUserId"
+      @close="onCloseCreatePollDialog"
+      @submit="onSubmitCreatePollDialog"
+    />
     <div id="right-col-wrapper">
       <div id="logo">
         <h1>Emissary ✉</h1>
@@ -123,11 +154,13 @@ const onSubmitLeaveConversationDialog = () => {
     </div>
     <ChatComponent 
       v-if="hasConversation()" 
+      :client="client"
       :current-conversation-id="currentConversationId" 
       :current-user-id="currentUserId" 
       @newMessage="updateFriendsList"
       @open-invite-user-dialog="onOpenInviteUserDialog"
       @open-leave-dialog="onOpenLeaveConversationDialog"
+      @open-create-poll-dialog="onOpenCreatePollDialog"
     />
   </div>
 </template>

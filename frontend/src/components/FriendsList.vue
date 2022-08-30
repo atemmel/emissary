@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import axios from "axios";
 import FriendsListItemComponent from "./FriendsListItemComponent.vue";
 import type {FriendsListItem} from "./../models/FriendsListItem";
 import {ref, onMounted, watch} from "vue";
-import {useStore} from "./../store";
-
-const store = useStore();
+import {useApi} from "./../api";
 
 const props = defineProps<{
   currentUserId: number;
@@ -14,18 +11,13 @@ const props = defineProps<{
 
 const emit = defineEmits(["conversationChange"]);
 
-const instance = axios.create({
-  baseURL: "http://localhost:8080/api",
-});
+const api = useApi();
 
 const friendsListItems = ref<FriendsListItem[]>([]);
 const currentItemId = ref<number|null>(null);
 
 const getAllFriendsListItems = () => {
-  const token = store.state.jwtToken;
-  instance.get("/friendslistitems/" + props.currentUserId, {
-      headers: {"Authorization": `Bearer ${token}`},
-    }).then((response: any) => {
+  api.get("/friendslistitems/" + props.currentUserId).then((response: any) => {
     friendsListItems.value = response.data;
     if(friendsListItems.value.length > 0 && currentItemId.value == null) {
       const newId = friendsListItems.value[0].conversationId;
