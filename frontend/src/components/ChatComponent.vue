@@ -360,7 +360,7 @@ const emitCreatePoll = () => {
         Invite to chat
       </div>
       <div class="chat-option-wrapper" @click="emitLeave">
-          <span class="evil">Leave Chat</span>
+        <span class="evil">Leave Chat</span>
       </div>
     </div>
     <div id="chat-bubbles" @wheel="onScroll">
@@ -375,9 +375,7 @@ const emitCreatePoll = () => {
     </div>
     <div id="chat-field-wrapper">
       <div id="chat-field">
-        <UploadFileButton 
-          @upload="onUpload"
-        />
+        <UploadFileButton @upload="onUpload"/>
         <CreatePollButton @poll-create="emitCreatePoll"/>
         <EmojiButton @pick="onEmojiPicked"/>
         <textarea 
