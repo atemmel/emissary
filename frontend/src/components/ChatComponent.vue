@@ -148,6 +148,7 @@ const pageinate = () => {
   const thisPage = head.value.conversationHeads[props.currentConversationId];
   const nextPage = thisPage + delta;
 
+  console.log("fetching from", thisPage, "to", nextPage);
   api.get("/conversations/"
     + props.currentConversationId
     + "/history/?from="

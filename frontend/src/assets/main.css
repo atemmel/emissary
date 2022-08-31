@@ -22,7 +22,6 @@
 .button-right {
   border-radius: 0px 0px 16px 0px;
   border-left: 1px solid #777;
-  background-color: #555;
 }
 
 .submit-button:hover {

@@ -128,7 +128,7 @@ const emitVote = (what: string) => emit("vote", what, props.message);
         @click="toggleTime"
         :class="bgClass"
         class="bubble text">
-        <div class="center-text">Poll</div>
+        <div class="center-text">{{message.attachment.name}}</div>
         <div v-for="(item, idx) in message.attachment.poll" :key="idx">
           <PollBar 
             :name="idx as string"

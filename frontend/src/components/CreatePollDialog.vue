@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import OverlayDialog from "./OverlayDialog.vue";
 import {ref} from "vue";
-import {Client} from "@stomp/stompjs";
+import type {Client} from "@stomp/stompjs";
 import type { ChatMessage, ChatMessageAttachment, Poll } from "../models/ChatModels";
 
 const props = defineProps<{
@@ -16,10 +16,14 @@ const emit = defineEmits(["close", "submit"]);
 const choices = ref<string[]>([]);
 
 const choice = ref<string>("");
+const title = ref<string>("");
 
 const addChoice = () => {
   const str = choice.value.trim();
   if(str.length == 0) {
+    return;
+  }
+  if(choices.value.indexOf(str) != -1) {
     return;
   }
   choices.value.push(str);
@@ -34,12 +38,19 @@ const sendClose = () => {
 const sendSubmit = () => {
   if(choices.value.length >= 2) {
     post();
+    emit("submit");
   }
-  emit("submit");
 };
 
 const post = () => {
+  const name = title.value.trim();
+  if(name.length < 1) {
+    return;
+  }
   const poll = choices.value.reduce((a, v) => ({ ...a, [v]: 0}), {}) as Poll;
+
+  title.value = "";
+  choices.value = [];
 
   const msg = {
     id: 0,
@@ -48,7 +59,7 @@ const post = () => {
     conversation: props.currentConversationId,
     timestamp: new Date(),
     attachment: {
-      name: "Poll",
+      name: name,
       type: "",
       bytes: "",
       poll: poll,
@@ -61,7 +72,8 @@ const post = () => {
   });
 };
 
-const maySubmit = () => choices.value.length >= 2;
+const maySubmit = () => choices.value.length >= 2 
+    && title.value.trim().length >= 1;
 </script>
 
 <template>
@@ -69,11 +81,15 @@ const maySubmit = () => choices.value.length >= 2;
     <div class="dialog-title">
       Create new poll
     </div>
+    <input class="input title-input" v-model="title" placeholder="Title">
     <div v-for="(choice, idx) in choices" :key="idx" class="mini-added-list-item" >
       {{choice}}
     </div>
     <div class="choice-input-wrapper">
-      <input class="choice-input" v-model="choice">
+      <input class="input choice-input" 
+        v-model="choice" 
+        @keypress.enter.exact="addChoice" 
+        placeholder="Choice">
       <div class="choice-submit" @click="addChoice">
         <div class="plus-vertical"></div>
         <div class="plus-horizontal"></div>
@@ -93,20 +109,22 @@ const maySubmit = () => choices.value.length >= 2;
   margin: 1em auto;
 }
 
-.choice-input {
+.input {
   display: inline-block;
   background-color: #444;
   color: var(--color-text);
   border: none;
   font-size: 1em;
   border-radius: 16px;
+}
+
+.title-input {
+  padding: 8px 25px 8px 25px;
+}
+
+.choice-input {
   padding: 8px 34px 8px 16px;
-  /*
-  border-radius: 16px 0px 0px 16px;
-  font-size: 1em;
-  height: 34px;
-  padding: 8px 16px;
-  */
+  margin-right: -32px;
 }
 
 .choice-submit {
@@ -114,17 +132,10 @@ const maySubmit = () => choices.value.length >= 2;
   background-color: #444;
   color: var(--color-text);
   padding: 8px 16px;
-  /*
-  width: 32px;
-  height: 34px;
-  border-radius: 0px 16px 16px 0px;
-  top: 11px;
-  */
   width: 32px;
   height: 32px;
   border-radius: 16px;
   top: 10px;
-  right: 32px;
 }
 
 .choice-submit:hover {
