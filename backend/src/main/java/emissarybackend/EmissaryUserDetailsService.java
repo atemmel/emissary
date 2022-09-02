@@ -17,7 +17,7 @@ public class EmissaryUserDetailsService implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws EmissaryUserNotFoundException {
-		var user = userRepo.findByName(username).orElseThrow(
+		EmissaryUser user = userRepo.findByName(username).orElseThrow(
 				() -> EmissaryUserNotFoundException.fromName(username));
 		return new User(
 				user.getName(),

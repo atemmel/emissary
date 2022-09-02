@@ -2,6 +2,7 @@ package emissarybackend;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -24,12 +25,12 @@ public class FriendsListItemService {
 	ChatMessageRepository messageRepository;
 
 	String createFriendNameFromParticipants(final Set<EmissaryUser> users, Long currentUserId) {
-		var otherUsers = new HashSet<EmissaryUser>(users);
+		Set<EmissaryUser> otherUsers = new HashSet<EmissaryUser>(users);
 		otherUsers.removeIf((usr) -> usr.getId() == currentUserId);
-		var friendName = "";
-		var it = otherUsers.iterator();
+		String friendName = "";
+		Iterator<EmissaryUser> it = otherUsers.iterator();
 		while(it.hasNext()) {
-			var usr = it.next();
+			EmissaryUser usr = it.next();
 			friendName += usr.getName();
 			if(it.hasNext()) {
 				friendName += ", ";
@@ -43,16 +44,16 @@ public class FriendsListItemService {
 			() -> new EmissaryUserNotFoundException(userId));
 		List<FriendsListItem> items = new ArrayList<>();
 		log.info("Total conversations " + user.getConversations().size());
-		var it = user.getConversations().iterator();
+		Iterator<ChatConversation> it = user.getConversations().iterator();
 		while(it.hasNext()) {
-			var conv = it.next();
-			var messages = conv.getMessages();
+			ChatConversation conv = it.next();
+			List<ChatMessage> messages = conv.getMessages();
 
 			if(messages.size() > 0) {
-				var lastMessage = messages.get(messages.size() - 1);
-				var lastAuthor = lastMessage.getAuthor();
-				var friendName = createFriendNameFromParticipants(conv.getParticipants(), userId);
-				var item = new FriendsListItem(
+				ChatMessage lastMessage = messages.get(messages.size() - 1);
+				EmissaryUser lastAuthor = lastMessage.getAuthor();
+				String friendName = createFriendNameFromParticipants(conv.getParticipants(), userId);
+				FriendsListItem item = new FriendsListItem(
 					conv.getId(), 
 					friendName,
 					lastMessage.getContents(), 
@@ -60,9 +61,9 @@ public class FriendsListItemService {
 					lastMessage.getTimestamp());
 					items.add(item);
 			} else {
-				var lastMessage = "No messages sent";
-				var friendName = createFriendNameFromParticipants(conv.getParticipants(), userId);
-				var item = new FriendsListItem(
+				String lastMessage = "No messages sent";
+				String friendName = createFriendNameFromParticipants(conv.getParticipants(), userId);
+				FriendsListItem item = new FriendsListItem(
 					conv.getId(),
 					friendName,
 					lastMessage,

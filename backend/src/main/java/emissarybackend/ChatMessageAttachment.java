@@ -110,7 +110,7 @@ public class ChatMessageAttachment {
 			return false;
 		}
 
-		var that = (ChatMessageAttachment)o;
+		ChatMessageAttachment that = (ChatMessageAttachment)o;
 		return Objects.equals(this.name, that.name)
 			&& Objects.equals(this.id, that.id)
 			&& Objects.equals(this.type, that.type);

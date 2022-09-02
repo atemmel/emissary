@@ -61,22 +61,22 @@ class ChatMessageAttachmentController {
 		log.info("UserId: " + userId);
 		log.info("ConversationId: " + conversationId);
 
-		final var size = document.getSize();
-		final var mb = 1024l * 1024l;
-		final var threshold = 8l * mb;
+		final long size = document.getSize();
+		final long mb = 1024l * 1024l;
+		final long threshold = 8l * mb;
 		if(size > threshold) {
 			log.info("Discarded upload request; file to large");
 			return null;
 		}
 
-		var message = new ChatMessage();
+		ChatMessage message = new ChatMessage();
 		message.setAuthor(userRepo.findById(userId).orElseThrow(
 			() -> new EmissaryUserNotFoundException(userId)));
-		var conv = conversationRepo.findById(conversationId).orElseThrow(
+		ChatConversation conv = conversationRepo.findById(conversationId).orElseThrow(
 			() -> new ChatConversationNotFoundException(conversationId));
 
 		try {
-			var attachment = new ChatMessageAttachment(
+			ChatMessageAttachment attachment = new ChatMessageAttachment(
 				document.getBytes(),
 				document.getOriginalFilename(),
 				document.getContentType());
@@ -128,17 +128,17 @@ class ChatMessageAttachmentController {
 		method=RequestMethod.POST)
 	@Transactional
 	public ChatMessage createPoll(@RequestBody PollInfo pollInfo) {
-		final var conversation = conversationRepo.findById(pollInfo.conversationId).orElseThrow(
+		final ChatConversation conversation = conversationRepo.findById(pollInfo.conversationId).orElseThrow(
 				() -> new ChatConversationNotFoundException(pollInfo.conversationId));
-		final var author = userRepo.findById(pollInfo.authorId).orElseThrow(
+		final EmissaryUser author = userRepo.findById(pollInfo.authorId).orElseThrow(
 				() -> new EmissaryUserNotFoundException(pollInfo.authorId));
-		var message = new ChatMessage();
+		ChatMessage message = new ChatMessage();
 		message.setAuthor(author);
-		final var poll = new HashMap<String, Integer>();
-		for(final var key: pollInfo.choices) {
+		final HashMap<String, Integer> poll = new HashMap<String, Integer>();
+		for(final String key: pollInfo.choices) {
 			poll.put(key, 0);
 		}
-		final var attachment = new ChatMessageAttachment(poll);
+		final ChatMessageAttachment attachment = new ChatMessageAttachment(poll);
 		message.setAttachment(attachmentRepo.save(attachment));
 		message = chatRepo.save(message);
 		conversation.addMessage(message);

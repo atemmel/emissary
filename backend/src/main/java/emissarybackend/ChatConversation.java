@@ -113,7 +113,7 @@ public class ChatConversation {
 			return false;
 		}
 
-		var that = (ChatConversation)o;
+		ChatConversation that = (ChatConversation)o;
 		return Objects.equals(this.id, that.id);
 	}
 }

@@ -129,7 +129,7 @@ public class ChatMessage {
 			return false;
 		}
 
-		var that = (ChatMessage)o;
+		ChatMessage that = (ChatMessage)o;
 		return Objects.equals(this.contents, that.contents)
 			&& Objects.equals(this.id, that.id);
 	}

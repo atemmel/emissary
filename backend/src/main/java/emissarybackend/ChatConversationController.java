@@ -34,9 +34,9 @@ class ChatConversationController {
 	public List<ChatMessage> catchup(
 			@PathVariable("id") Long conversationId,
 			@RequestParam("from") int from) {
-		final var conversation = repo.findById(conversationId).orElseThrow(
+		final ChatConversation conversation = repo.findById(conversationId).orElseThrow(
 			() -> new ChatConversationNotFoundException(conversationId));
-		final var messages = conversation.getMessages();
+		final List<ChatMessage> messages = conversation.getMessages();
 		return messages.subList(from, messages.size());
 	}
 
@@ -44,10 +44,10 @@ class ChatConversationController {
 	public List<ChatMessage> head(
 			@PathVariable("id") Long conversationId,
 			@RequestParam("count") int count) {
-		final var conversation = repo.findById(conversationId).orElseThrow(
+		final ChatConversation conversation = repo.findById(conversationId).orElseThrow(
 			() -> new ChatConversationNotFoundException(conversationId));
-		final var messages = conversation.getMessages();
-		final var begin = messages.size() - (messages.size() - count < 0 
+		final List<ChatMessage> messages = conversation.getMessages();
+		final int begin = messages.size() - (messages.size() - count < 0 
 			? messages.size()
 			: count);
 		log.info("Sending " + begin + " to " + messages.size());
@@ -59,14 +59,14 @@ class ChatConversationController {
 			@PathVariable("id") Long conversationId,
 			@RequestParam("from") int from,
 			@RequestParam("to") int count) {
-		final var conversation = repo.findById(conversationId).orElseThrow(
+		final ChatConversation conversation = repo.findById(conversationId).orElseThrow(
 			() -> new ChatConversationNotFoundException(conversationId));
-		final var messages = conversation.getMessages();
-		final var end = messages.size() - from;
+		final List<ChatMessage> messages = conversation.getMessages();
+		final int end = messages.size() - from;
 		if(end <= 0) {
 			return List.of();
 		}
-		final var begin = end - count;
+		final int begin = end - count;
 		return messages.subList(begin < 0 ? 0 : begin, end);
 	}
 
@@ -74,10 +74,10 @@ class ChatConversationController {
 	public ChatConversation init(
 			@PathVariable("id") Long conversationId,
 			@RequestParam("count") int count) {
-		final var conversation = repo.findById(conversationId).orElseThrow(
+		final ChatConversation conversation = repo.findById(conversationId).orElseThrow(
 			() -> new ChatConversationNotFoundException(conversationId));
-		final var messages = head(conversationId, count);
-		final var result = new ChatConversation(conversation);
+		final List<ChatMessage> messages = head(conversationId, count);
+		final ChatConversation result = new ChatConversation(conversation);
 		result.setMessages(messages);
 		return result;
 	}
@@ -99,11 +99,11 @@ class ChatConversationController {
 	@PostMapping("/conversations/addParticipants")
 	public void addParticipants(@RequestBody ConversationUsersDelta delta) {
 		log.info("Adding " + delta.users.size() + " users to a conversation");
-		final var conversationId = delta.getConversationId();
-		var conversation = repo.findById(conversationId).orElseThrow(
+		final Long conversationId = delta.getConversationId();
+		ChatConversation conversation = repo.findById(conversationId).orElseThrow(
 				() -> new ChatConversationNotFoundException(conversationId));
-		for (var userId : delta.getUsers()) {
-			var user = userRepo.findById(userId).orElseThrow(
+		for (Long userId : delta.getUsers()) {
+			EmissaryUser user = userRepo.findById(userId).orElseThrow(
 					() -> new EmissaryUserNotFoundException(userId));
 			conversation.addParticipant(user);
 		}
@@ -113,11 +113,11 @@ class ChatConversationController {
 	@PostMapping("/conversations/removeParticipants")
 	public void removeParticipants(@RequestBody ConversationUsersDelta delta) {
 		log.info("Removing " + delta.users.size() + " users from a conversation");
-		final var conversationId = delta.getConversationId();
-		var conversation = repo.findById(conversationId).orElseThrow(
+		final Long conversationId = delta.getConversationId();
+		ChatConversation conversation = repo.findById(conversationId).orElseThrow(
 				() -> new ChatConversationNotFoundException(conversationId));
-		for(var userId : delta.getUsers()) {
-			var user = userRepo.findById(userId).orElseThrow(
+		for(Long userId : delta.getUsers()) {
+			EmissaryUser user = userRepo.findById(userId).orElseThrow(
 					() -> new EmissaryUserNotFoundException(userId));
 			conversation.removeParticipant(user);
 		}

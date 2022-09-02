@@ -3,6 +3,7 @@ package emissarybackend;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +28,12 @@ public class AuthService {
 	private PasswordEncoder passwordEncoder;
 
 	public Map<String, Object> register(EmissaryUser user) {
-		var maybeUser = emissaryUserRepository.findByName(user.getName());
+		Optional<EmissaryUser> maybeUser = emissaryUserRepository.findByName(user.getName());
 		if(maybeUser.isPresent()) {
 			log.info("Could not register user " + user.getName() + ", user already exists");
 			return Collections.singletonMap("error", "A user with this name already exists");
 		}
-		var encodedPassword = passwordEncoder.encode(user.getPassword());
+		String encodedPassword = passwordEncoder.encode(user.getPassword());
 		user.setPassword(encodedPassword);
 		log.info("Saving " + user.getName());
 		user = emissaryUserRepository.save(user);
@@ -44,13 +45,13 @@ public class AuthService {
 	public Map<String, Object> login(LoginCredentials body) {
 		log.info("Logging in " + body.getUsername());
 		try {
-			var authInputToken = new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword());
+			UsernamePasswordAuthenticationToken authInputToken = new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword());
 			log.info("Authenticating... ");
 			authManager.authenticate(authInputToken);
 			log.info("Generating token... ");
 			String token = jwtUtil.generateToken(body.getUsername());
 			log.info("Finding " + body.getUsername());
-			var user = emissaryUserRepository.findByName(body.getUsername()).orElseThrow(
+			EmissaryUser user = emissaryUserRepository.findByName(body.getUsername()).orElseThrow(
 					() -> new RuntimeException("Could not find user by name"));
 			log.info("Success!");
 			return createLoginInfoMap(token, user);
@@ -62,7 +63,7 @@ public class AuthService {
 
 
 	private static Map<String, Object> createLoginInfoMap(String token, EmissaryUser user) {
-		var map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("jwt-token", token);
 		map.put("userId", user.getId());
 		return map;

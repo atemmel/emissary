@@ -93,7 +93,7 @@ public class EmissaryUser {
 			return false;
 		}
 
-		var that = (EmissaryUser)o;
+		EmissaryUser that = (EmissaryUser)o;
 		return Objects.equals(this.name, that.name)
 			&& Objects.equals(this.password, that.password)
 			&& Objects.equals(this.id, that.id);

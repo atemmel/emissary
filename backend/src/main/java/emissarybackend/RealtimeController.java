@@ -2,7 +2,9 @@ package emissarybackend;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
@@ -44,8 +46,8 @@ class RealtimeController {
 	@Transactional
 	public Map<String, Object> newMessage(ChatMessage message) {
 		log.info("Begin message handling...");
-		final var contents = message.getContents();
-		final var attachment = message.getAttachment();
+		final String contents = message.getContents();
+		final ChatMessageAttachment attachment = message.getAttachment();
 		boolean lacksMessage = contents.isEmpty() || contents.isBlank();
 		boolean lacksAttachment = attachment == null 
 			|| (attachment.getBytes().length <= 0 
@@ -64,8 +66,8 @@ class RealtimeController {
 		}
 
 		message = chatRepo.save(message);
-		final var convId = message.getConversation().getId();
-		final var conv = conversationRepo.findById(convId).orElseThrow(
+		final Long convId = message.getConversation().getId();
+		final ChatConversation conv = conversationRepo.findById(convId).orElseThrow(
 				() -> new ChatConversationNotFoundException(convId));
 		conv.addMessage(message);
 		log.info("Saved new message");
@@ -77,25 +79,25 @@ class RealtimeController {
 	@Transactional
 	public Map<String, Object> newVote(PollVote vote) {
 
-		final var author = vote.getAuthor();
-		final var poll = vote.getPoll();
-		final var attachment = poll.getAttachment();
-		final var votes = voteRepository.findByPoll(poll);
+		final EmissaryUser author = vote.getAuthor();
+		final ChatMessage poll = vote.getPoll();
+		final ChatMessageAttachment attachment = poll.getAttachment();
+		final List<PollVote> votes = voteRepository.findByPoll(poll);
 		PollVote prevVote = null;
-		for(var other: votes) {
+		for(PollVote other: votes) {
 			if(other.getAuthor().getId() == author.getId()) {
 				prevVote = other;
 				break;
 			}
 		}
 
-		final var map = attachment.getPoll();
+		final Map<String, Integer> map = attachment.getPoll();
 		if(prevVote != null) {
-			var voteCount = map.get(prevVote.getChoice());
+			Integer voteCount = map.get(prevVote.getChoice());
 			map.put(prevVote.getChoice(), voteCount - 1);
 			voteRepository.deleteById(prevVote.getId());
 		}
-		var voteCount = map.get(vote.getChoice());
+		Integer voteCount = map.get(vote.getChoice());
 		map.put(vote.getChoice(), voteCount + 1);
 		attachmentRepo.save(attachment);
 		vote = voteRepository.save(vote);
@@ -110,12 +112,12 @@ class RealtimeController {
 	public Map<String, Object> head(
 			@RequestParam("conversationId") Long conversationId,
 			@RequestParam("userId") Long userId) {
-		final var conversation = conversationRepo.findById(conversationId).orElseThrow(
+		final ChatConversation conversation = conversationRepo.findById(conversationId).orElseThrow(
 			() -> new ChatConversationNotFoundException(conversationId));
-		final var conversationHead = conversation.getMessages().size();
-		final var user = userRepo.findById(userId).orElseThrow(
+		final int conversationHead = conversation.getMessages().size();
+		final EmissaryUser user = userRepo.findById(userId).orElseThrow(
 			() -> new EmissaryUserNotFoundException(userId));
-		final var friendsListHead = getFriendsListHead(user);
+		final Date friendsListHead = getFriendsListHead(user);
 		return Map.of(
 			"conversationHead", conversationHead,
 			"friendsListHead", friendsListHead);
@@ -126,22 +128,22 @@ class RealtimeController {
 	@Transactional
 	public Map<String, Object> heads(
 			@PathVariable("userId") Long userId) {
-		final var user = userRepo.findById(userId).orElseThrow(
+		final EmissaryUser user = userRepo.findById(userId).orElseThrow(
 				() -> new EmissaryUserNotFoundException(userId));
-		final var conversationHeads = getConversationHeads(user);
-		final var friendsListHead = getFriendsListHead(user);
+		final Map<Long, Integer> conversationHeads = getConversationHeads(user);
+		final Date friendsListHead = getFriendsListHead(user);
 		return Map.of(
 			"conversationHeads", conversationHeads,
 			"friendsListHead", friendsListHead);
 	}
 
 	Date getFriendsListHead(EmissaryUser user) {
-		final var conversations = user.getConversations();
+		final Set<ChatConversation> conversations = user.getConversations();
 		if(conversations.isEmpty()) {
 			return new Date(0);
 		}
-		var latest = new Date(0);
-		for(final var conversation : conversations) {
+		Date latest = new Date(0);
+		for(final ChatConversation conversation : conversations) {
 			if(conversation.getMessages().isEmpty()) {
 				latest = latest.before(conversation.getCreationTimestamp())
 					? conversation.getCreationTimestamp()
@@ -149,7 +151,7 @@ class RealtimeController {
 				continue;
 			}
 			
-			final var lastMessage = conversation.lastMessage();
+			final ChatMessage lastMessage = conversation.lastMessage();
 			latest = latest.before(lastMessage.getTimestamp())
 				? lastMessage.getTimestamp()
 				: latest;
@@ -158,14 +160,14 @@ class RealtimeController {
 	}
 
 	Map<Long, Integer> getConversationHeads(EmissaryUser user) {
-		final var conversations = user.getConversations();
+		final Set<ChatConversation> conversations = user.getConversations();
 		if(conversations.isEmpty()) {
 			return Map.of();
 		}
-		var latest = new HashMap<Long, Integer>(conversations.size());
-		for(final var conversation: conversations) {
-			final var id = conversation.getId();
-			final var head = conversation.getMessages().size();
+		Map<Long, Integer> latest = new HashMap<Long, Integer>(conversations.size());
+		for(final ChatConversation conversation: conversations) {
+			final Long id = conversation.getId();
+			final int head = conversation.getMessages().size();
 			latest.put(id, head);
 		}
 		return latest;
