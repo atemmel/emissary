@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+//import io.restassured.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -36,6 +37,14 @@ public class AuthControllerTest {
 	@Test
 	@Order(1)
 	void register() throws Exception {
+		/*
+		var code = RestAssured.given()
+			.params("name", user.getName(), 
+					"password", user.getPassword())
+			.when()
+			.post("/auth/register").getStatusCode();
+		assertEquals(200, code);
+		*/
 		mockMvc.perform(MockMvcRequestBuilders.post("/auth/register")
 			.content(General.asJsonString(user))
 			.contentType(MediaType.APPLICATION_JSON))
